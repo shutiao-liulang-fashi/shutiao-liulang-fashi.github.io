@@ -12,6 +12,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "abcjs": "^6.6.2",
     "valaxy": "0.28.1",
     "valaxy-theme-press": "latest"
   },

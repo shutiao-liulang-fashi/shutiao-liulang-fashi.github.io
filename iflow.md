@@ -26,6 +26,7 @@
 - **Vue 3**: 前端框架
 - **TypeScript**: 5.9.3 - 类型安全
 - **Vite**: 开发服务器和构建工具
+- **abcjs**: 6.6.2 - ABC 记谱法渲染和音频播放库
 
 ### 主题
 - **valaxy-theme-press**: 使用的博客主题
@@ -41,7 +42,11 @@
 ```
 sutiao/
 ├── components/          # 自定义 Vue 组件
+│   ├── core/           # 核心工具模块
+│   │   └── scientificToAbc.ts  # 科学记谱法转换工具
 │   ├── GoToPage.vue   # 自动跳转组件
+│   ├── PlayNote.vue   # 音符播放组件
+│   ├── AbcSvg.vue     # 五线谱渲染组件
 │   └── README.md
 ├── layouts/             # 自定义布局
 ├── locales/             # 国际化配置
@@ -53,7 +58,8 @@ sutiao/
 │   ├── index.md         # 首页
 │   ├── about/           # 关于页面
 │   ├── music/           # 音乐相关页面
-│   └── test/            # 测试页面
+│   ├── test/            # 测试页面
+│   └── start/           # 开始页面（包含 PlayNote 组件测试）
 ├── public/              # 静态资源
 │   ├── favicon.svg
 │   ├── pwa-192x192.png
@@ -79,7 +85,8 @@ sutiao/
 ├── Dockerfile           # Docker 配置
 ├── netlify.toml         # Netlify 配置
 ├── vercel.json          # Vercel 配置
-└── nginx.conf           # Nginx 配置
+├── nginx.conf           # Nginx 配置
+└── 科学谱转换规则.md     # 科学记谱法转换规则文档
 ```
 
 ## 开发指南
@@ -148,6 +155,69 @@ docker build . -t sutiao:latest
   - `footer`: 页脚信息
 - `unocss`: UnoCSS 配置
 
+## 音乐功能
+
+### 科学记谱法支持
+
+项目支持科学记谱法（Scientific Pitch Notation），可以轻松在博客中嵌入音乐内容。
+
+**基本格式**: `[A-G][#b]?\d+[./\d.-]*`
+
+**示例**:
+- `C4` - 中央 C
+- `C#4` - 升 C
+- `D42` - 二分音符 D
+- `C4/2` - 八分音符 C
+- `C4 D4 E4 F4 | G4 A4 B4 c4` - 带小节线的旋律
+
+**快速使用**:
+```vue
+<PlayNote notes="C4 D4 E4 F4" />
+```
+
+**显示五线谱**:
+```vue
+<PlayNote
+  notes="C4 D4 E4 F4 G4 A4 B4 c4"
+  :show-sheet-music="true"
+  :show-title="false"
+/>
+```
+
+**自定义标题和调性**:
+```vue
+<PlayNote
+  notes="G4 A4 B4 c4"
+  :show-sheet-music="true"
+  :conversion-options="{
+    title: '我的旋律',
+    key: 'G'
+  }"
+/>
+```
+
+### 音符转换规则
+
+详细的科学记谱法到 ABC 记谱法转换规则请参考 `科学谱转换规则.md` 文档。
+
+**主要支持**:
+- 音符名称（A-G）
+- 升降号（#、b、n）
+- 多八度（C3、C4、C5、C6）
+- 时值修饰符（/2、/4、2、4、.）
+- 连音线（-）
+- 休止符（z、Z）
+- 小节线（|、||、|:、:|）
+- 三连音等特殊记号
+
+### 技术实现
+
+音乐功能基于 abcjs 库实现：
+- 使用 npm 安装的 abcjs（6.6.2）
+- 通过 Vite 打包到客户端
+- 支持音频播放和五线谱渲染
+- 响应式设计，自动适应容器宽度
+
 ## 自定义组件
 
 ### GoToPage 组件
@@ -170,6 +240,94 @@ docker build . -t sutiao:latest
 - 延时 2.5 秒后跳转
 - 保持浏览器 title 不变
 
+### PlayNote 组件
+
+**功能**: 科学记谱法音符播放组件
+
+**位置**: `components/PlayNote.vue`
+
+**使用方法**:
+```vue
+<PlayNote
+  notes="C4 D4 E4 F4"
+  :show-sheet-music="true"
+  :show-title="false"
+/>
+```
+
+**属性**:
+- `notes` (必需): 科学记谱法音符字符串，如 "C4 D4 E4"
+- `conversionOptions` (可选): 转换选项
+  - `key`: 调性，默认 'C'
+  - `meter`: 拍号，默认 '4/4'
+  - `tempo`: 速度，默认 '1/4=120'
+  - `unitNoteLength`: 记录单位，默认 '1/4'
+  - `title`: 标题，默认 'Play Note'
+- `showSheetMusic` (可选): 是否显示五线谱，默认 false
+- `showTitle` (可选): 是否显示五线谱标题，默认 false
+
+**特性**:
+- 点击音符显示区域即可播放
+- 支持播放状态指示
+- 可选显示五线谱
+- 可选显示/隐藏标题
+- 自动处理 abcjs 音频播放
+
+### AbcSvg 组件
+
+**功能**: ABC 记谱法五线谱渲染组件
+
+**位置**: `components/AbcSvg.vue`
+
+**使用方法**:
+```vue
+<AbcSvg
+  :abc-str="abcString"
+  :show-title="false"
+/>
+```
+
+**属性**:
+- `abcStr` (必需): ABC 记谱法字符串
+- `options` (可选): abcjs 渲染选项
+- `showTitle` (可选): 是否显示标题，默认 false
+
+**特性**:
+- 使用 abcjs 渲染五线谱
+- 响应式设计，自动适应容器宽度
+- 音符多时自动换行
+- 支持自定义渲染选项
+
+### scientificToAbc 工具
+
+**功能**: 科学记谱法到 ABC 记谱法转换工具
+
+**位置**: `components/core/scientificToAbc.ts`
+
+**使用方法**:
+```typescript
+import { scientificToAbc } from './core/scientificToAbc'
+
+const abcString = scientificToAbc('C4 D4 E4 F4', {
+  key: 'C',
+  meter: '4/4',
+  tempo: '1/4=120',
+  title: 'My Tune'
+})
+```
+
+**支持的特性**:
+- 音符名称转换（A-G）
+- 升降号处理（#、b、n）
+- 多八度转换
+- 时值修饰符（/2、/4、2、4、.）
+- 连音线（-）
+- 休止符（z、Z）
+- 小节线（|、||、|:、:|、::）
+- 三连音等特殊记号
+
+**详细规则**: 参见 `科学谱转换规则.md`
+
 ## 导航结构
 
 当前导航配置：[]
@@ -177,7 +335,13 @@ docker build . -t sutiao:latest
 ### 侧边栏结构
 
 1. **开始** (`/start/`)
-
+   - 包含 PlayNote 组件测试用例
+   - 单个音符播放测试
+   - 多个音符播放测试
+   - 带升降号音符测试
+   - 不同八度音符测试
+   - 五线谱显示测试
+   - 简单旋律测试
 
 2. **占位**
    - 占位1 (`/start/`)
@@ -210,6 +374,7 @@ docker build . -t sutiao:latest
 - [ ] 查看是否有安全漏洞
 - [ ] 备份重要内容
 - [ ] 检查网站访问统计
+- [ ] 测试音乐播放功能
 
 #### 每月检查
 - [ ] 更新依赖包
@@ -385,3 +550,13 @@ docker build . -t sutiao:latest
 ---
 
 **最后更新**: 2026-03-27
+
+## 更新日志
+
+### 2026-03-27
+- 添加音乐播放功能
+- 创建 PlayNote 组件，支持科学记谱法音符播放
+- 创建 AbcSvg 组件，支持五线谱渲染
+- 创建 scientificToAbc 工具，支持科学记谱法到 ABC 记谱法转换
+- 添加科学谱转换规则文档
+- 在 /start/ 页面添加音乐功能测试用例
