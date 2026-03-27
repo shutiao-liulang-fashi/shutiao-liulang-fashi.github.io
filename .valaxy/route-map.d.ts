@@ -55,51 +55,9 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/about/': RouteRecordInfo<
-      '/about/',
-      '/about',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/about/site': RouteRecordInfo<
-      '/about/site',
-      '/about/site',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/archives/': RouteRecordInfo<
-      '/archives/',
-      '/archives',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/categories/': RouteRecordInfo<
-      '/categories/',
-      '/categories',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/links/': RouteRecordInfo<
-      '/links/',
-      '/links',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/posts/hello-valaxy': RouteRecordInfo<
-      '/posts/hello-valaxy',
-      '/posts/hello-valaxy',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/tags/': RouteRecordInfo<
-      '/tags/',
-      '/tags',
+    '/start/': RouteRecordInfo<
+      '/start/',
+      '/start',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -141,45 +99,9 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
-    'pages/about/index.md': {
+    'pages/start/index.md': {
       routes:
-        | '/about/'
-      views:
-        | never
-    }
-    'pages/about/site.md': {
-      routes:
-        | '/about/site'
-      views:
-        | never
-    }
-    'pages/archives/index.md': {
-      routes:
-        | '/archives/'
-      views:
-        | never
-    }
-    'pages/categories/index.md': {
-      routes:
-        | '/categories/'
-      views:
-        | never
-    }
-    'pages/links/index.md': {
-      routes:
-        | '/links/'
-      views:
-        | never
-    }
-    'pages/posts/hello-valaxy.md': {
-      routes:
-        | '/posts/hello-valaxy'
-      views:
-        | never
-    }
-    'pages/tags/index.md': {
-      routes:
-        | '/tags/'
+        | '/start/'
       views:
         | never
     }
