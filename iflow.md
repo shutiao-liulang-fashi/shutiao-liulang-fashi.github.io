@@ -48,12 +48,10 @@ sutiao/
 │   │   ├── jianpuToAbc.ts       # 简谱到 ABC 转换工具
 │   │   ├── jianpuToScientific.ts # 简谱到科学谱转换工具
 │   │   └── scientificToAbc.ts   # 科学谱到 ABC 转换工具
-│   ├── GoToPage.vue       # 自动跳转组件
 │   ├── AbcSvg.vue         # 五线谱渲染组件
-│   ├── AnyNote.vue        # 综合音乐记谱法工具（简谱/科学谱/ABC谱）
-│   ├── PlayAbcNote.vue    # ABC 记谱法播放组件
-│   ├── PlayJianpuNote.vue # 简谱播放组件
-│   └── PlayScientificNote.vue # 科学记谱法播放组件
+│   ├── GoToPage.vue       # 自动跳转组件
+│   ├── YueLiNotes.vue     # 乐理音符播放组件
+│   └── YueLiNotesPlayground.vue # 乐理练习场组件
 ├── layouts/             # 自定义布局
 ├── locales/             # 国际化配置
 │   ├── en.yml
@@ -67,10 +65,15 @@ sutiao/
 │   ├── test/            # 测试页面
 │   ├── start/           # 开始页面（包含音乐功能测试）
 │   └── yueli/           # 乐理相关文档
-│       ├── 简谱转换科学谱规则V2_1.md
-│       ├── 简谱转换ABC规则V2_1.md
-│       ├── 科学谱转换ABC规则V2_1.md
-│       └── ABC规则V2_1_en.md
+│       ├── ABCNotation.md
+│       ├── index.md
+│       ├── playground.md
+│       └── 规则/        # 乐理转换规则文档
+│           ├── 简谱转换科学谱规则V2_1.md
+│           ├── 简谱转换ABC规则V2_1.md
+│           ├── 科学谱转换ABC规则V2_1.md
+│           ├── ABC规则V2_1_en.md
+│           └── abc_standard_v2_1.pdf
 ├── public/              # 静态资源
 │   ├── favicon.svg
 │   ├── pwa-192x192.png
@@ -88,6 +91,7 @@ sutiao/
 ├── .vscode/             # VSCode 配置
 │   ├── extensions.json
 │   └── settings.json
+├── components.md        # 组件使用文档
 ├── site.config.ts       # 站点配置
 ├── valaxy.config.ts     # Valaxy 配置
 ├── valaxy.config.router.ts  # 路由配置
@@ -189,7 +193,8 @@ docker build . -t sutiao:latest
 
 **使用方法**:
 ```vue
-<PlayScientificNote
+<YueLiNotes
+  notation-type="scientific"
   notes="C4 D4 E4 F4"
   :show-sheet-music="true"
 />
@@ -207,7 +212,8 @@ docker build . -t sutiao:latest
 
 **使用方法**:
 ```vue
-<PlayJianpuNote
+<YueLiNotes
+  notation-type="jianpu"
   notes="1' 2' 3' 4' 5'"
   :show-sheet-music="true"
   :conversion-options="{
@@ -233,7 +239,8 @@ C D E F | G A B c
 
 **使用方法**:
 ```vue
-<PlayAbcNote
+<YueLiNotes
+  notation-type="abc"
   notes="X:1
 T:我的旋律
 M:4/4
@@ -245,9 +252,9 @@ C D E F | G A B c"
 />
 ```
 
-### AnyNote 综合工具
+### YueLiNotesPlayground 综合工具
 
-**AnyNote** 是一个综合性的音乐记谱法工具，支持三种记谱法的输入、转换、播放和渲染。
+**YueLiNotesPlayground** 是一个综合性的音乐记谱法工具，支持三种记谱法的输入、转换、播放和渲染。
 
 **功能特性**:
 - 支持简谱、科学谱、ABC谱三种输入方式
@@ -258,7 +265,7 @@ C D E F | G A B c"
 
 **使用方法**:
 ```vue
-<AnyNote />
+<YueLiNotesPlayground />
 ```
 
 **可配置参数**:
@@ -271,11 +278,12 @@ C D E F | G A B c"
 ### 音符转换规则
 
 详细的转换规则请参考以下文档：
-- `科学谱转换规则.md` - 科学记谱法转换规则
-- `pages/yueli/简谱转换科学谱规则V2_1.md` - 简谱到科学谱转换规则
-- `pages/yueli/简谱转换ABC规则V2_1.md` - 简谱到ABC转换规则
-- `pages/yueli/科学谱转换ABC规则V2_1.md` - 科学谱到ABC转换规则
-- `pages/yueli/ABC规则V2_1_en.md` - ABC记谱法标准（英文）
+- `components.md` - 组件使用文档
+- `pages/yueli/规则/简谱转换科学谱规则V2_1.md` - 简谱到科学谱转换规则
+- `pages/yueli/规则/简谱转换ABC规则V2_1.md` - 简谱到ABC转换规则
+- `pages/yueli/规则/科学谱转换ABC规则V2_1.md` - 科学谱到ABC转换规则
+- `pages/yueli/规则/ABC规则V2_1_en.md` - ABC记谱法标准（英文）
+- `pages/yueli/规则/abc_standard_v2_1.pdf` - ABC记谱法标准PDF
 
 **主要支持特性**:
 - 音符名称（A-G, 1-7）
@@ -298,128 +306,71 @@ C D E F | G A B c"
 
 ## 自定义组件
 
-### AnyNote 组件
+### YueLiNotes 组件
 
-**功能**: 综合音乐记谱法工具，支持简谱、科学谱、ABC谱的输入、转换、播放和渲染
+**功能**: 乐理音符播放组件，支持简谱、科学谱、ABC谱三种记谱法的播放和显示
 
-**位置**: `components/AnyNote.vue`
-
-**使用方法**:
-```vue
-<AnyNote />
-```
-
-**功能特性**:
-- 支持三种记谱法输入（简谱、科学谱、ABC谱）
-- 自动转换：简谱 ↔ 科学谱 ↔ ABC谱
-- 实时五线谱渲染
-- 音频播放功能
-- 可自定义基音、拍号、速度、单位音符长度、标题
-- 标签切换界面
-- 播放/停止/复位控制
-- 显示转换后的ABC字符串
-
-### PlayAbcNote 组件
-
-**功能**: ABC 记谱法音符播放组件
-
-**位置**: `components/PlayAbcNote.vue`
+**位置**: `components/YueLiNotes.vue`
 
 **使用方法**:
 ```vue
-<PlayAbcNote
-  notes="X:1
-T:我的旋律
-M:4/4
-L:1/4
-Q:120
-K:C
-C D E F | G A B c"
-  :show-sheet-music="true"
-/>
-```
-
-**属性**:
-- `notes` (必需): ABC 记谱法字符串
-- `conversionOptions` (可选): 转换选项
-  - `key`: 调性，默认 'C'
-  - `meter`: 拍号，默认 '4/4'
-  - `tempo`: 速度，默认 '120'
-  - `unitNoteLength`: 记录单位，默认 '1/4'
-  - `title`: 标题，默认 'ABC Notation'
-- `showSheetMusic` (可选): 是否显示五线谱，默认 false
-
-**特性**:
-- 点击音符显示区域即可播放
-- 支持播放状态指示
-- 可选显示五线谱
-- 自动检测头部信息
-- 显示包含头部信息标记
-
-### PlayJianpuNote 组件
-
-**功能**: 简谱音符播放组件
-
-**位置**: `components/PlayJianpuNote.vue`
-
-**使用方法**:
-```vue
-<PlayJianpuNote
-  notes="1' 2' 3' 4' 5'"
-  :show-sheet-music="true"
-  :conversion-options="{
-    baseNote: 'C4'
-  }"
-/>
-```
-
-**属性**:
-- `notes` (必需): 简谱音符字符串
-- `conversionOptions` (可选): 转换选项
-  - `key`: 调性，默认 'C'
-  - `meter`: 拍号，默认 '4/4'
-  - `tempo`: 速度，默认 '120'
-  - `unitNoteLength`: 记录单位，默认 '1/4'
-  - `title`: 标题，默认 'Jianpu Notation'
-  - `baseNote`: 基音，默认 'C4'
-- `showSheetMusic` (可选): 是否显示五线谱，默认 false
-
-**特性**:
-- 点击音符显示区域即可播放
-- 支持播放状态指示
-- 可选显示五线谱
-- 支持高低八度（' 和 ,）
-- 支持升降号
-
-### PlayScientificNote 组件
-
-**功能**: 科学记谱法音符播放组件
-
-**位置**: `components/PlayScientificNote.vue`
-
-**使用方法**:
-```vue
-<PlayScientificNote
+<YueLiNotes
+  notation-type="scientific"
   notes="C4 D4 E4 F4"
   :show-sheet-music="true"
 />
 ```
 
 **属性**:
-- `notes` (必需): 科学记谱法音符字符串，如 "C4 D4 E4"
+- `notationType` (必需): 记谱法类型，可选值：'abc' | 'jianpu' | 'scientific'
+- `notes` (必需): 音符字符串
 - `conversionOptions` (可选): 转换选项
   - `key`: 调性，默认 'C'
   - `meter`: 拍号，默认 '4/4'
   - `tempo`: 速度，默认 '120'
   - `unitNoteLength`: 记录单位，默认 '1/4'
-  - `title`: 标题，默认 'Scientific Notation'
+  - `title`: 标题
+  - `baseNote`: 基音（仅简谱需要）
 - `showSheetMusic` (可选): 是否显示五线谱，默认 false
+- `showTitle` (可选): 是否显示五线谱标题，默认 false
 
 **特性**:
 - 点击音符显示区域即可播放
 - 支持播放状态指示
 - 可选显示五线谱
-- 支持多八度（C3-C6）
+- 自动检测 ABC 格式的头部信息
+- 实时错误提示
+- 支持三种记谱法：简谱、科学谱、ABC谱
+- 暴露 play/stop 方法供父组件调用
+
+### YueLiNotesPlayground 组件
+
+**功能**: 乐理练习场组件，综合性的音乐记谱法工具，支持三种记谱法的输入、转换、播放和渲染
+
+**位置**: `components/YueLiNotesPlayground.vue`
+
+**使用方法**:
+```vue
+<YueLiNotesPlayground />
+```
+
+**功能特性**:
+- 参数配置：基音选择（C3-B5）、拍号、速度、单位音符长度、自定义标题
+- 三种记谱法支持：简谱、科学谱、ABC谱
+- 自动转换：简谱 ↔ 科学谱 ↔ ABC谱
+- 参数变化时自动重新计算和渲染
+- 播放功能：播放/停止/复位控制
+- 实时五线谱渲染
+- 显示转换后的 ABC 字符串
+- 标签切换界面
+- 内置《茉莉花》示例
+
+**使用场景**:
+- 音乐教学和练习
+- 记谱法学习和转换
+- 旋律创作和编辑
+- 音乐理论研究和验证
+- 乐谱可视化演示
 
 ### AbcSvg 组件
 
@@ -622,17 +573,18 @@ const abcString = scientificToAbc('C4 D4 E4 F4', {
 ### 侧边栏结构
 
 1. **开始** (`/start/`)
-   - AnyNote 综合音乐记谱法工具测试
-   - 简谱播放测试（带五线谱显示）
-   - 科学谱播放测试（带五线谱显示）
-   - ABC记谱法播放测试（带五线谱显示）
+   - YueLiNotes 组件测试
+   - YueLiNotesPlayground 组件测试
 
 2. **乐理** (`/yueli/`)
-   - 简谱转换科学谱规则 V2.1
-   - 简谱转换ABC规则 V2.1
-   - 科学谱转换ABC规则 V2.1
-   - ABC规则 V2.1 (英文版)
-   - abc_standard_v2.1.pdf
+   - ABC记谱法介绍
+   - 乐理练习场
+   - 规则/
+     - 简谱转换科学谱规则 V2.1
+     - 简谱转换ABC规则 V2.1
+     - 科学谱转换ABC规则 V2.1
+     - ABC规则 V2.1 (英文版)
+     - abc_standard_v2.1.pdf
 
 ## 部署信息
 
@@ -812,7 +764,9 @@ const abcString = scientificToAbc('C4 D4 E4 F4', {
 ### 文档维护
 
 #### 保持更新的文档
-- 项目说明文档
+- 项目说明文档 (README.md)
+- 组件使用文档 (components.md)
+- 项目维护文档 (iflow.md)
 - API 文档（如有）
 - 部署文档
 - 贡献指南
@@ -836,11 +790,24 @@ const abcString = scientificToAbc('C4 D4 E4 F4', {
 
 ---
 
-**最后更新**: 2026-03-28
+**最后更新**: 2026-03-28 (第二次更新)
 
 ## 更新日志
 
-### 2026-03-28
+### 2026-03-28 (第二次更新)
+- 重构音乐记谱法组件和文档结构
+  - 删除 AnyNote、PlayAbcNote、PlayJianpuNote、PlayScientificNote 组件
+  - 新增 YueLiNotes 组件，简化播放功能，支持三种记谱法
+  - 新增 YueLiNotesPlayground 组件，提供完整的乐理练习场功能
+  - 重新组织乐理文档结构，将规则文档移至 pages/yueli/规则/ 子目录
+  - 新增乐理练习场页面 (pages/yueli/playground.md)
+- 优化核心转换工具代码
+- 改进 AbcSvg 组件，添加 showTitle 属性控制标题显示
+- 更新路由映射和配置
+- 新增 components.md 文档，详细说明所有组件的使用方法和参数
+- 更新项目文档，反映最新的组件架构
+
+### 2026-03-28 (第一次更新)
 - 新增 AnyNote 组件，支持简谱、科学谱、ABC谱三种记谱法的输入、转换、播放和渲染
 - 新增 PlayAbcNote 组件，支持 ABC 记谱法音符播放
 - 新增 PlayJianpuNote 组件，支持简谱音符播放
