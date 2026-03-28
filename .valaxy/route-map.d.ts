@@ -97,6 +97,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/yueli/ABCNotation': RouteRecordInfo<
+      '/yueli/ABCNotation',
+      '/yueli/ABCNotation',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
   }
 
   /**
@@ -167,6 +174,12 @@ declare module 'vue-router/auto-routes' {
     'pages/yueli/ABC规则V2_1_en.md': {
       routes:
         | '/yueli/ABC规则V2_1_en'
+      views:
+        | never
+    }
+    'pages/yueli/ABCNotation.md': {
+      routes:
+        | '/yueli/ABCNotation'
       views:
         | never
     }
