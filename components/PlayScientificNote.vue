@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { jianpuToAbc, type ConversionOptions } from './core/jianpuToAbc'
+import { scientificToAbc, type ConversionOptions } from './core/scientificToAbc'
 import { AbcAudioPlayer } from './core/abcjsHandler'
 import AbcSvg from './AbcSvg.vue'
 
 interface Props {
-  /** 简谱音符字符串 */
+  /** 科学记谱法音符（单个或多个，空格分隔） */
   notes: string
   /** 转换选项 */
   conversionOptions?: ConversionOptions
@@ -19,8 +19,7 @@ const props = withDefaults(defineProps<Props>(), {
     meter: '4/4',
     tempo: '1/4=120',
     unitNoteLength: '1/4',
-    title: 'Jianpu Notation',
-    baseNote: 'C4'
+    title: 'Scientific Notation'
   }),
   showSheetMusic: false,
 })
@@ -34,20 +33,13 @@ const error = ref<string | null>(null)
 let audioPlayer: AbcAudioPlayer | null = null
 
 /**
- * 将简谱转换为 ABC 记谱法
+ * 将科学记谱法转换为 ABC 记谱法
  */
 const abcString = computed(() => {
   if (!props.notes || !props.notes.trim()) {
     return ''
   }
-  console.log('Converting jianpu to ABC:', props.notes, props.conversionOptions)
-  try {
-    return jianpuToAbc(props.notes, props.conversionOptions)
-  } catch (err) {
-    console.error('Error converting jianpu to ABC:', err)
-    error.value = (err as Error).message
-    return ''
-  }
+  return scientificToAbc(props.notes, props.conversionOptions)
 })
 
 /**
@@ -57,7 +49,6 @@ async function play() {
   if (!abcString.value) {
     return
   }
-
   console.log('Playing ABC string:', abcString.value)
   try {
     // 清除之前的错误
@@ -114,15 +105,15 @@ defineExpose({
 </script>
 
 <template>
-  <div class="play-jianpu-note">
-    <!-- 显示简谱信息 -->
+  <div class="play-note">
+    <!-- 显示音符信息 -->
     <div
       class="note-info"
       :class="{ 'clickable': props.notes && props.notes.trim(), 'playing': isPlaying }"
       @click="props.notes && props.notes.trim() ? play() : null"
     >
       <div class="note-display">
-        {{ props.notes || '无简谱' }}
+        {{ props.notes || '无音符' }}
       </div>
       <div v-if="isPlaying" class="playing-indicator">
         ▶ 播放中...
@@ -141,7 +132,7 @@ defineExpose({
 </template>
 
 <style scoped>
-.play-jianpu-note {
+.play-note {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -182,9 +173,8 @@ defineExpose({
   background: var(--va-c-bg-soft);
   border-radius: 0.5rem;
   color: var(--va-c-text);
-  font-family: 'Courier New', monospace;
   white-space: pre-wrap; /* 保留换行符和空格 */
-  word-break: break-all; /* 允许在任意字符间断行 */
+  word-break: break-word; /* 允许在单词边界换行 */
 }
 
 .playing-indicator {

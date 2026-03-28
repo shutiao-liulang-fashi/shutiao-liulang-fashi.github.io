@@ -8,8 +8,6 @@ interface Props {
   abcStr: string
   /** 渲染选项 */
   options?: ABCJS.RenderOptions
-  /** 是否显示标题 */
-  showTitle?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -21,7 +19,6 @@ const props = withDefaults(defineProps<Props>(), {
     paddingleft: 10,
     paddingright: 10,
   }),
-  showTitle: false,
 })
 
 const abcContainer = ref<HTMLDivElement | null>(null)
@@ -42,7 +39,7 @@ async function renderAbc() {
   }
 
   try {
-    await renderer!.render(props.abcStr, props.options, props.showTitle)
+    await renderer!.render(props.abcStr, props.options)
     loading.value = false
     error.value = null
   } catch (err) {
@@ -69,10 +66,6 @@ onBeforeUnmount(() => {
   }
 })
 
-// 监听 showTitle 变化
-watch(() => props.showTitle, () => {
-  renderAbc()
-})
 
 // 监听 abcStr 变化
 watch(() => props.abcStr, () => {
@@ -86,7 +79,7 @@ watch(() => props.options, () => {
 </script>
 
 <template>
-  <div class="abc-svg-wrapper" :class="{ 'hide-title': !showTitle }">
+  <div class="abc-svg-wrapper" >
     <!-- ABC 渲染容器 -->
     <div
       ref="abcContainer"
@@ -143,8 +136,4 @@ watch(() => props.options, () => {
   width: 100% !important;
 }
 
-/* 隐藏标题 */
-.abc-svg-wrapper.hide-title :deep(.abcjs-title) {
-  display: none;
-}
 </style>

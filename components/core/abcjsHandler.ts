@@ -66,10 +66,16 @@ export class AbcAudioPlayer {
       // 初始化音频上下文
       await this.initAudioContext()
 
+      // 等待 AudioContext 完全准备好
+      if (this.audioContext && this.audioContext.state === 'suspended') {
+        await this.audioContext.resume()
+      }
+
       // 清空容器
       this.hiddenContainer.innerHTML = ''
-      // 等待一小段时间确保渲染完成
-      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // 等待容器清空完成
+      await new Promise(resolve => setTimeout(resolve, 50))
 
       // 创建合成器控制器
       this.synthController = new ABCJS.synth.SynthController()
@@ -97,14 +103,27 @@ export class AbcAudioPlayer {
       })
       const visualObj = visualObjs[0] // 获取第一个（通常只有一个）
 
+      // 等待渲染完成
+      await new Promise(resolve => setTimeout(resolve, 150))
+
       // 加载并播放（使用音量参数）
       this.synthController.load(this.hiddenContainer, cursorControl, {
         soundFontVolumeMultiplier: this.volume,
       })
 
+      // 等待加载完成
+      await new Promise(resolve => setTimeout(resolve, 200))
+
       // 设置 tune 并播放
       await this.synthController.setTune(visualObj, false, {})
+
+      // 等待 setTune 完成，确保音频数据已准备好
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       this.synthController.play()
+
+      // 等待播放真正开始
+      await new Promise(resolve => setTimeout(resolve, 50))
 
       this.isPlayingState = true
       this.onPlayCallback?.()
@@ -220,9 +239,18 @@ export class AbcRenderer {
   }
 
   /**
+   * 检测 ABC 字符串是否包含标题
+   */
+  private hasTitleInAbc(abcStr: string): boolean {
+    const lines = abcStr.split('\n')
+    return lines.some(line => line.trim().startsWith('T:'))
+  }
+
+  /**
    * 处理 ABC 字符串，根据 showTitle 选项控制标题显示
    */
   private processAbcString(abcStr: string): string {
+    // 如果 showTitle 为 true，则不做任何处理
     if (this.showTitle) {
       return abcStr
     }
@@ -241,12 +269,12 @@ export class AbcRenderer {
    * 渲染 ABC 记谱法到五线谱
    * @param abcString ABC 记谱法字符串
    * @param options 渲染选项
-   * @param showTitle 是否显示标题
+   * @param showTitle 是否显示标题（如果未指定，自动检测）
    */
   async render(
     abcString: string,
     options?: ABCJS.RenderOptions,
-    showTitle: boolean = false
+    showTitle?: boolean
   ): Promise<void> {
     if (!this.container || !abcString) {
       throw new Error('容器或 ABC 字符串为空')
@@ -254,7 +282,13 @@ export class AbcRenderer {
 
     try {
       this.currentAbcString = abcString
-      this.showTitle = showTitle
+
+      // 如果 showTitle 未指定，自动检测是否包含标题
+      if (showTitle === undefined) {
+        this.showTitle = this.hasTitleInAbc(abcString)
+      } else {
+        this.showTitle = showTitle
+      }
 
       // 清空容器
       this.container.innerHTML = ''

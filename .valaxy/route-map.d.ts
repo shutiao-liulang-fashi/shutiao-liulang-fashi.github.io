@@ -69,9 +69,23 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/yueli/简谱转换科学谱规则V2.1': RouteRecordInfo<
+      '/yueli/简谱转换科学谱规则V2.1',
+      '/yueli/%E7%AE%80%E8%B0%B1%E8%BD%AC%E6%8D%A2%E7%A7%91%E5%AD%A6%E8%B0%B1%E8%A7%84%E5%88%99V2/1',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/yueli/简谱转换ABC规则V2.1': RouteRecordInfo<
       '/yueli/简谱转换ABC规则V2.1',
       '/yueli/%E7%AE%80%E8%B0%B1%E8%BD%AC%E6%8D%A2ABC%E8%A7%84%E5%88%99V2/1',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/yueli/ABC规则V2.1.en': RouteRecordInfo<
+      '/yueli/ABC规则V2.1.en',
+      '/yueli/ABC%E8%A7%84%E5%88%99V2/1/en',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -125,9 +139,21 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
+    'pages/yueli/简谱转换科学谱规则V2.1.md': {
+      routes:
+        | '/yueli/简谱转换科学谱规则V2.1'
+      views:
+        | never
+    }
     'pages/yueli/简谱转换ABC规则V2.1.md': {
       routes:
         | '/yueli/简谱转换ABC规则V2.1'
+      views:
+        | never
+    }
+    'pages/yueli/ABC规则V2.1.en.md': {
+      routes:
+        | '/yueli/ABC规则V2.1.en'
       views:
         | never
     }

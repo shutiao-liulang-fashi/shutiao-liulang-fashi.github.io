@@ -1,18 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { scientificToAbc, type ConversionOptions } from './core/scientificToAbc'
+import { abcToAbc, type AbcConversionOptions, hasAbcHeader } from './core/abcToAbc'
 import { AbcAudioPlayer } from './core/abcjsHandler'
 import AbcSvg from './AbcSvg.vue'
 
 interface Props {
-  /** 科学记谱法音符（单个或多个，空格分隔） */
+  /** ABC 记谱法字符串 */
   notes: string
-  /** 转换选项 */
-  conversionOptions?: ConversionOptions
+  /** 转换选项（作为默认值，用户传入的头部信息优先） */
+  conversionOptions?: AbcConversionOptions
   /** 是否显示五线谱 */
   showSheetMusic?: boolean
-  /** 是否显示五线谱标题 */
-  showTitle?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -21,10 +19,9 @@ const props = withDefaults(defineProps<Props>(), {
     meter: '4/4',
     tempo: '1/4=120',
     unitNoteLength: '1/4',
-    title: 'Play Note'
+    title: 'ABC Notation'
   }),
   showSheetMusic: false,
-  showTitle: false,
 })
 
 // 当前是否正在播放
@@ -36,29 +33,47 @@ const error = ref<string | null>(null)
 let audioPlayer: AbcAudioPlayer | null = null
 
 /**
- * 将科学记谱法转换为 ABC 记谱法
+ * 检查用户传入的 ABC 是否包含头部信息
  */
-const abcString = computed(() => {
+const hasUserHeader = computed(() => {
+  return hasAbcHeader(props.notes)
+})
+
+/**
+ * 处理 ABC 字符串
+ */
+const processedAbcString = computed(() => {
   if (!props.notes || !props.notes.trim()) {
     return ''
   }
-  return scientificToAbc(props.notes, props.conversionOptions)
+  console.log('Processing ABC string:', props.notes, props.conversionOptions)
+  try {
+    return abcToAbc(props.notes, props.conversionOptions)
+  } catch (err) {
+    console.error('Error processing ABC string:', err)
+    error.value = (err as Error).message
+    return ''
+  }
 })
 
 /**
  * 播放音符
  */
 async function play() {
-  if (!abcString.value) {
+  if (!processedAbcString.value) {
     return
   }
-  console.log('Playing ABC string:', abcString.value)
+
+  console.log('Playing ABC string:', processedAbcString.value)
   try {
     // 清除之前的错误
     error.value = null
 
+    // 设置播放状态（在播放开始前就设置，给用户更好的反馈）
+    isPlaying.value = true
+
     // 播放音频
-    await audioPlayer!.play(abcString.value)
+    await audioPlayer!.play(processedAbcString.value)
   } catch (err) {
     console.error('Error playing audio:', err)
     error.value = (err as Error).message
@@ -105,15 +120,18 @@ defineExpose({
 </script>
 
 <template>
-  <div class="play-note">
-    <!-- 显示音符信息 -->
+  <div class="play-abc-note">
+    <!-- 显示 ABC 信息 -->
     <div
       class="note-info"
       :class="{ 'clickable': props.notes && props.notes.trim(), 'playing': isPlaying }"
       @click="props.notes && props.notes.trim() ? play() : null"
     >
       <div class="note-display">
-        {{ props.notes || '无音符' }}
+        <pre>{{ props.notes || '无 ABC 乐谱' }}</pre>
+      </div>
+      <div v-if="hasUserHeader" class="header-indicator">
+        📝 包含头部信息
       </div>
       <div v-if="isPlaying" class="playing-indicator">
         ▶ 播放中...
@@ -125,15 +143,14 @@ defineExpose({
 
     <!-- 显示五线谱（可选） -->
     <AbcSvg
-      v-if="showSheetMusic && abcString"
-      :abc-str="abcString"
-      :show-title="showTitle"
+      v-if="showSheetMusic && processedAbcString"
+      :abc-str="processedAbcString"
     />
   </div>
 </template>
 
 <style scoped>
-.play-note {
+.play-abc-note {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -168,20 +185,44 @@ defineExpose({
 }
 
 .note-display {
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   padding: 0.75rem;
   background: var(--va-c-bg-soft);
   border-radius: 0.5rem;
   color: var(--va-c-text);
+  font-family: 'Courier New', monospace;
   white-space: pre-wrap; /* 保留换行符和空格 */
-  word-break: break-word; /* 允许在单词边界换行 */
+  word-break: break-all; /* 允许在任意字符间断行 */
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.note-display pre {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+}
+
+.header-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--va-c-success);
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 }
 
 .playing-indicator {
   position: absolute;
   top: 8px;
-  right: 8px;
+  left: 8px;
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
   color: var(--va-c-primary);

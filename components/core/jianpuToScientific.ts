@@ -1,0 +1,445 @@
+/**
+ * 简谱到科学谱转换工具
+ * 基于 ABC 标准 v2.1
+ */
+
+export interface JianpuToScientificOptions {
+  /** 基音，默认 C4 */
+  baseNote?: string;
+}
+
+/**
+ * 解析后的音符
+ */
+interface ParsedNote {
+  /** 简谱数字 1-7 */
+  digit: number;
+  /** 升降号 */
+  accidental: '#' | 'b' | 'n' | '';
+  /** 八度修饰符 */
+  octaveModifier: number;
+  /** 时值修饰符 */
+  durationModifiers: string[];
+  /** 是否为休止符 */
+  isRest: boolean;
+  /** 特殊符号（小节线、反复记号等） */
+  specialSymbol?: string;
+}
+
+/**
+ * 简谱到科学谱转换函数
+ * @param jianpu 简谱字符串
+ * @param options 转换选项
+ * @returns 科学谱字符串
+ */
+export function jianpuToScientific(
+  jianpu: string,
+  options: JianpuToScientificOptions = {}
+): string {
+  const {
+    baseNote = 'C4'
+  } = options;
+
+  // 解析简谱
+  const notes = parseJianpu(jianpu);
+
+  // 转换为科学谱
+  const scientificNotes = notes.map(note => convertNoteToScientific(note, baseNote));
+
+  // 组合成字符串
+  return scientificNotes.join(' ');
+}
+
+/**
+ * 解析简谱字符串
+ */
+function parseJianpu(jianpu: string): ParsedNote[] {
+  const tokens = tokenizeJianpu(jianpu);
+  return tokens.map(parseJianpuToken);
+}
+
+/**
+ * 将简谱字符串分解为标记
+ */
+function tokenizeJianpu(input: string): string[] {
+  // 移除多余空格和换行
+  const cleaned = input.replace(/\s+/g, ' ').trim();
+  if (!cleaned) return [];
+
+  const tokens: string[] = [];
+  let current = '';
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const char = cleaned[i];
+
+    // 空格分隔标记
+    if (char === ' ') {
+      if (current) {
+        tokens.push(current);
+        current = '';
+      }
+      continue;
+    }
+
+    // 小节线和反复记号
+    if (char === '|' || char === ':') {
+      if (current) {
+        tokens.push(current);
+        current = '';
+      }
+
+      // 检查组合符号
+      if (i + 1 < cleaned.length) {
+        const twoChars = char + cleaned[i + 1];
+        if (['||', '|:', ':|', '::'].includes(twoChars)) {
+          tokens.push(twoChars);
+          i++;
+          continue;
+        }
+
+        // 检查三字符组合
+        if (i + 2 < cleaned.length) {
+          const threeChars = twoChars + cleaned[i + 2];
+          if (['|::', '::|'].includes(threeChars)) {
+            tokens.push(threeChars);
+            i += 2;
+            continue;
+          }
+        }
+      }
+
+      tokens.push(char);
+      continue;
+    }
+
+    // 三连音等
+    if (char === '(') {
+      if (current) {
+        tokens.push(current);
+        current = '';
+      }
+
+      // 找到对应的 )
+      let parenEnd = i + 1;
+      while (parenEnd < cleaned.length && cleaned[parenEnd] !== ')') {
+        parenEnd++;
+      }
+
+      if (parenEnd < cleaned.length) {
+        tokens.push(cleaned.substring(i, parenEnd + 1));
+        i = parenEnd;
+        continue;
+      }
+    }
+
+    // 休止符
+    if (char === '0' || char === '-') {
+      if (current && current.match(/^\d/)) {
+        // 当前是音符，0 是独立的休止符
+        tokens.push(current);
+        current = char;
+      } else {
+        current += char;
+      }
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (current) {
+    tokens.push(current);
+  }
+
+  return tokens;
+}
+
+/**
+ * 解析单个简谱标记
+ */
+function parseJianpuToken(token: string): ParsedNote {
+  // 检查特殊符号
+  const specialSymbols = ['|', ':', '(', ')', '[', ']', '||', '|:', ':|', '::', '|::', '::|'];
+  if (specialSymbols.includes(token)) {
+    return {
+      digit: 0,
+      accidental: '',
+      octaveModifier: 0,
+      durationModifiers: [],
+      isRest: false,
+      specialSymbol: token
+    };
+  }
+
+  // 检查三连音
+  if (token.startsWith('(')) {
+    return {
+      digit: 0,
+      accidental: '',
+      octaveModifier: 0,
+      durationModifiers: [],
+      isRest: false,
+      specialSymbol: token
+    };
+  }
+
+  // 检查休止符
+  if (token === '0' || token === '-' || token.startsWith('0') || token.startsWith('-')) {
+    let durationModifiers: string[] = [];
+    let restPart = token;
+
+    // 提取时值修饰符
+    if (token.length > 1) {
+      const match = token.match(/^([0-\-])(.+)$/);
+      if (match) {
+        restPart = match[1];
+        durationModifiers = parseDurationModifiers(match[2]);
+      }
+    }
+
+    return {
+      digit: 0,
+      accidental: '',
+      octaveModifier: 0,
+      durationModifiers,
+      isRest: true,
+      specialSymbol: undefined
+    };
+  }
+
+  // 解析音符
+  // 格式: [1-7][#b]?[',]*[-_=.]*
+  const match = token.match(/^([1-7])([#bn]?)([',]*)([-_=.]*)$/);
+  if (!match) {
+    // 尝试另一种格式：时值在前面，如 6/2
+    const match2 = token.match(/^([1-7])([#bn]?)([',]*)(\/\d+)([-_=.]*)$/);
+    if (match2) {
+      const [, digit, accidental, octave, fraction, otherModifiers] = match2;
+      return {
+        digit: parseInt(digit, 10),
+        accidental: (accidental as '#' | 'b' | 'n') || '',
+        octaveModifier: calculateOctaveModifier(octave),
+        durationModifiers: [fraction, ...parseDurationModifiers(otherModifiers)],
+        isRest: false,
+        specialSymbol: undefined
+      };
+    }
+
+    return {
+      digit: 0,
+      accidental: '',
+      octaveModifier: 0,
+      durationModifiers: [],
+      isRest: false,
+      specialSymbol: undefined
+    };
+  }
+
+  const [, digit, accidental, octave, modifiers] = match;
+
+  return {
+    digit: parseInt(digit, 10),
+    accidental: (accidental as '#' | 'b' | 'n') || '',
+    octaveModifier: calculateOctaveModifier(octave),
+    durationModifiers: parseDurationModifiers(modifiers),
+    isRest: false,
+    specialSymbol: undefined
+  };
+}
+
+/**
+ * 计算八度修饰符
+ */
+function calculateOctaveModifier(octaveStr: string): number {
+  let modifier = 0;
+  for (const char of octaveStr) {
+    if (char === "'") {
+      modifier += 1;
+    } else if (char === ',') {
+      modifier -= 1;
+    }
+  }
+  return modifier;
+}
+
+/**
+ * 解析时值修饰符
+ */
+function parseDurationModifiers(modifiers: string): string[] {
+  const result: string[] = [];
+  let i = 0;
+
+  while (i < modifiers.length) {
+    const char = modifiers[i];
+
+    if (char === '-') {
+      result.push('-');
+      i++;
+    } else if (char === '_') {
+      result.push('_');
+      i++;
+    } else if (char === '=') {
+      result.push('=');
+      i++;
+    } else if (char === '.') {
+      result.push('.');
+      i++;
+    } else if (char === '/') {
+      // 分数时值
+      let fraction = '/';
+      i++;
+      while (i < modifiers.length && /\d/.test(modifiers[i])) {
+        fraction += modifiers[i];
+        i++;
+      }
+      result.push(fraction);
+    } else {
+      i++;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * 音名数组（按半音排列）
+ */
+const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+/**
+ * 大调音阶偏移（相对于基音）
+ */
+const majorScaleOffset = [0, 2, 4, 5, 7, 9, 11];
+
+/**
+ * 获取音名的半音位置
+ */
+function getNoteSemitone(noteName: string): number {
+  return noteNames.indexOf(noteName);
+}
+
+/**
+ * 获取升降号的偏移
+ */
+function getAccidentalOffset(accidental: string): number {
+  switch (accidental) {
+    case '#':
+      return 1;
+    case 'b':
+      return -1;
+    case 'n':
+      return 0;
+    default:
+      return 0;
+  }
+}
+
+/**
+ * 获取基音的八度
+ */
+function getBaseOctave(baseNote: string): number {
+  const match = baseNote.match(/(\d+)$/);
+  return match ? parseInt(match[1], 10) : 4;
+}
+
+/**
+ * 获取基音的音名（去除八度）
+ */
+function getBaseNoteName(baseNote: string): string {
+  return baseNote.replace(/\d+$/, '');
+}
+
+/**
+ * 将解析后的简谱音符转换为科学谱
+ */
+function convertNoteToScientific(note: ParsedNote, baseNote: string): string {
+  // 特殊符号直接返回
+  if (note.specialSymbol) {
+    return note.specialSymbol;
+  }
+
+  // 休止符
+  if (note.isRest) {
+    let rest = 'z';
+    if (note.durationModifiers.length > 0) {
+      rest += note.durationModifiers.join('');
+    }
+    return rest;
+  }
+
+  // 获取基音信息
+  const baseOctave = getBaseOctave(baseNote);
+  const baseNoteName = getBaseNoteName(baseNote);
+
+  // 计算音名
+  const baseSemitone = getNoteSemitone(baseNoteName);
+  const scaleOffset = majorScaleOffset[note.digit - 1];
+  const accidentalOffset = getAccidentalOffset(note.accidental);
+
+  let targetSemitone = (baseSemitone + scaleOffset + accidentalOffset) % 12;
+  if (targetSemitone < 0) targetSemitone += 12;
+
+  let finalNoteName = noteNames[targetSemitone];
+
+  // 计算八度
+  let octave = baseOctave + note.octaveModifier;
+
+  // 检查是否跨越八度边界（例如：B# 应该是 C5，而不是 B4#）
+  const originalSemitone = (baseSemitone + scaleOffset) % 12;
+  if (note.accidental === '#' && originalSemitone >= 11) {
+    // B# → C5
+    finalNoteName = 'C';
+    octave += 1;
+  }
+
+  // 组合音名和八度
+  const scientificNote = finalNoteName + octave;
+
+  // 添加时值修饰符
+  if (note.durationModifiers.length > 0) {
+    return scientificNote + note.durationModifiers.join('');
+  }
+
+  return scientificNote;
+}
+
+/**
+ * 快速转换函数（使用默认选项）
+ */
+export function quickConvert(jianpu: string): string {
+  return jianpuToScientific(jianpu);
+}
+
+/**
+ * 批量转换多个简谱字符串
+ */
+export function batchConvert(
+  jianpuArray: string[],
+  options?: JianpuToScientificOptions
+): string[] {
+  return jianpuArray.map(jianpu => jianpuToScientific(jianpu, options));
+}
+
+/**
+ * 验证简谱格式
+ */
+export function validateJianpuNotation(jianpu: string): boolean {
+  const tokens = tokenizeJianpu(jianpu);
+  return tokens.every(token => {
+    // 特殊符号
+    const specialSymbols = ['|', ':', '(', ')', '[', ']', '||', '|:', ':|', '::', '|::', '::|'];
+    if (specialSymbols.includes(token)) return true;
+
+    // 三连音
+    if (token.startsWith('(')) return true;
+
+    // 休止符
+    if (token === '0' || token === '-' || token.startsWith('0') || token.startsWith('-')) {
+      return true;
+    }
+
+    // 音符
+    const match = token.match(/^([1-7])([#bn]?)([',]*)([-_=.]*(\/\d+)?)?$/);
+    return match !== null;
+  });
+}
