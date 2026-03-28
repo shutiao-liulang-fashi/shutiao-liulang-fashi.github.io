@@ -69,30 +69,30 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/yueli/科学谱转换ABC规则V2_1': RouteRecordInfo<
-      '/yueli/科学谱转换ABC规则V2_1',
-      '/yueli/%E7%A7%91%E5%AD%A6%E8%B0%B1%E8%BD%AC%E6%8D%A2ABC%E8%A7%84%E5%88%99V2_1',
+    '/yueli/规则/科学谱转换ABC规则V2_1': RouteRecordInfo<
+      '/yueli/规则/科学谱转换ABC规则V2_1',
+      '/yueli/%E8%A7%84%E5%88%99/%E7%A7%91%E5%AD%A6%E8%B0%B1%E8%BD%AC%E6%8D%A2ABC%E8%A7%84%E5%88%99V2_1',
       Record<never, never>,
       Record<never, never>,
       | never
     >,
-    '/yueli/简谱转换科学谱规则V2_1': RouteRecordInfo<
-      '/yueli/简谱转换科学谱规则V2_1',
-      '/yueli/%E7%AE%80%E8%B0%B1%E8%BD%AC%E6%8D%A2%E7%A7%91%E5%AD%A6%E8%B0%B1%E8%A7%84%E5%88%99V2_1',
+    '/yueli/规则/简谱转换科学谱规则V2_1': RouteRecordInfo<
+      '/yueli/规则/简谱转换科学谱规则V2_1',
+      '/yueli/%E8%A7%84%E5%88%99/%E7%AE%80%E8%B0%B1%E8%BD%AC%E6%8D%A2%E7%A7%91%E5%AD%A6%E8%B0%B1%E8%A7%84%E5%88%99V2_1',
       Record<never, never>,
       Record<never, never>,
       | never
     >,
-    '/yueli/简谱转换ABC规则V2_1': RouteRecordInfo<
-      '/yueli/简谱转换ABC规则V2_1',
-      '/yueli/%E7%AE%80%E8%B0%B1%E8%BD%AC%E6%8D%A2ABC%E8%A7%84%E5%88%99V2_1',
+    '/yueli/规则/简谱转换ABC规则V2_1': RouteRecordInfo<
+      '/yueli/规则/简谱转换ABC规则V2_1',
+      '/yueli/%E8%A7%84%E5%88%99/%E7%AE%80%E8%B0%B1%E8%BD%AC%E6%8D%A2ABC%E8%A7%84%E5%88%99V2_1',
       Record<never, never>,
       Record<never, never>,
       | never
     >,
-    '/yueli/ABC规则V2_1_en': RouteRecordInfo<
-      '/yueli/ABC规则V2_1_en',
-      '/yueli/ABC%E8%A7%84%E5%88%99V2_1_en',
+    '/yueli/规则/ABC规则V2_1_en': RouteRecordInfo<
+      '/yueli/规则/ABC规则V2_1_en',
+      '/yueli/%E8%A7%84%E5%88%99/ABC%E8%A7%84%E5%88%99V2_1_en',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -100,6 +100,13 @@ declare module 'vue-router/auto-routes' {
     '/yueli/ABCNotation': RouteRecordInfo<
       '/yueli/ABCNotation',
       '/yueli/ABCNotation',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/yueli/playground': RouteRecordInfo<
+      '/yueli/playground',
+      '/yueli/playground',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -153,33 +160,39 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
-    'pages/yueli/科学谱转换ABC规则V2_1.md': {
+    'pages/yueli/规则/科学谱转换ABC规则V2_1.md': {
       routes:
-        | '/yueli/科学谱转换ABC规则V2_1'
+        | '/yueli/规则/科学谱转换ABC规则V2_1'
       views:
         | never
     }
-    'pages/yueli/简谱转换科学谱规则V2_1.md': {
+    'pages/yueli/规则/简谱转换科学谱规则V2_1.md': {
       routes:
-        | '/yueli/简谱转换科学谱规则V2_1'
+        | '/yueli/规则/简谱转换科学谱规则V2_1'
       views:
         | never
     }
-    'pages/yueli/简谱转换ABC规则V2_1.md': {
+    'pages/yueli/规则/简谱转换ABC规则V2_1.md': {
       routes:
-        | '/yueli/简谱转换ABC规则V2_1'
+        | '/yueli/规则/简谱转换ABC规则V2_1'
       views:
         | never
     }
-    'pages/yueli/ABC规则V2_1_en.md': {
+    'pages/yueli/规则/ABC规则V2_1_en.md': {
       routes:
-        | '/yueli/ABC规则V2_1_en'
+        | '/yueli/规则/ABC规则V2_1_en'
       views:
         | never
     }
     'pages/yueli/ABCNotation.md': {
       routes:
         | '/yueli/ABCNotation'
+      views:
+        | never
+    }
+    'pages/yueli/playground.md': {
+      routes:
+        | '/yueli/playground'
       views:
         | never
     }

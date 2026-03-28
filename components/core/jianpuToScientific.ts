@@ -46,8 +46,28 @@ export function jianpuToScientific(
   // 转换为科学谱
   const scientificNotes = notes.map(note => convertNoteToScientific(note, baseNote));
 
-  // 组合成字符串
-  return scientificNotes.join(' ');
+  // 构建最终字符串，保留换行符
+  let result = '';
+  let needSpace = false; // 标记是否需要在下一个音符前添加空格
+
+  for (let i = 0; i < scientificNotes.length; i++) {
+    const current = scientificNotes[i];
+
+    if (notes[i].specialSymbol === '\n') {
+      // 换行符：保留换行符
+      result += '\n';
+      needSpace = false;
+    } else if (current) {
+      // 正常音符
+      if (needSpace) {
+        result += ' ';
+      }
+      result += current;
+      needSpace = true; // 下一个非换行符需要空格
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -62,8 +82,8 @@ function parseJianpu(jianpu: string): ParsedNote[] {
  * 将简谱字符串分解为标记
  */
 function tokenizeJianpu(input: string): string[] {
-  // 移除多余空格和换行
-  const cleaned = input.replace(/\s+/g, ' ').trim();
+  // 移除首尾空白，但保留中间的空白字符用于解析
+  const cleaned = input.trim();
   if (!cleaned) return [];
 
   const tokens: string[] = [];
@@ -72,12 +92,22 @@ function tokenizeJianpu(input: string): string[] {
   for (let i = 0; i < cleaned.length; i++) {
     const char = cleaned[i];
 
-    // 空格分隔标记
-    if (char === ' ') {
+    // 空格和制表符分隔标记
+    if (char === ' ' || char === '\t') {
       if (current) {
         tokens.push(current);
         current = '';
       }
+      continue;
+    }
+
+    // 换行符保留为单独的标记
+    if (char === '\n') {
+      if (current) {
+        tokens.push(current);
+        current = '';
+      }
+      tokens.push('\n'); // 保留换行符作为标记
       continue;
     }
 
@@ -179,6 +209,18 @@ function tokenizeJianpu(input: string): string[] {
  * 解析单个简谱标记
  */
 function parseJianpuToken(token: string): ParsedNote {
+  // 检查是否为换行符
+  if (token === '\n') {
+    return {
+      digit: 0,
+      accidental: '',
+      octaveModifier: 0,
+      durationModifiers: [],
+      isRest: false,
+      specialSymbol: '\n'
+    };
+  }
+
   // 检查特殊符号
   const specialSymbols = ['|', ':', '(', ')', '[', ']', '||', '|:', ':|', '::', '|::', '::|'];
   if (specialSymbols.includes(token)) {

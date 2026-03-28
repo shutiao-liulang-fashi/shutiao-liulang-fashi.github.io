@@ -1,16 +1,28 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { abcToAbc, type AbcConversionOptions, hasAbcHeader } from './core/abcToAbc'
+import { jianpuToAbc, type ConversionOptions as JianpuConversionOptions } from './core/jianpuToAbc'
+import { scientificToAbc, type ConversionOptions as ScientificConversionOptions } from './core/scientificToAbc'
 import { AbcAudioPlayer } from './core/abcjsHandler'
 import AbcSvg from './AbcSvg.vue'
 
+type NotationType = 'abc' | 'jianpu' | 'scientific'
+
+interface ConversionOptions extends AbcConversionOptions {
+  baseNote?: string // 仅简谱需要
+}
+
 interface Props {
-  /** ABC 记谱法字符串 */
+  /** 记谱法类型 */
+  notationType: NotationType
+  /** 音符字符串 */
   notes: string
-  /** 转换选项（作为默认值，用户传入的头部信息优先） */
-  conversionOptions?: AbcConversionOptions
+  /** 转换选项 */
+  conversionOptions?: ConversionOptions
   /** 是否显示五线谱 */
   showSheetMusic?: boolean
+  /** 是否显示五线谱标题 */
+  showTitle?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -19,9 +31,10 @@ const props = withDefaults(defineProps<Props>(), {
     meter: '4/4',
     tempo: '120',
     unitNoteLength: '1/4',
-    title: 'ABC Notation'
+    title: 'Notation'
   }),
   showSheetMusic: false,
+  showTitle: false,
 })
 
 // 当前是否正在播放
@@ -33,23 +46,63 @@ const error = ref<string | null>(null)
 let audioPlayer: AbcAudioPlayer | null = null
 
 /**
- * 检查用户传入的 ABC 是否包含头部信息
+ * 根据 notationType 获取默认标题
  */
-const hasUserHeader = computed(() => {
-  return hasAbcHeader(props.notes)
+const getDefaultTitle = computed(() => {
+  switch (props.notationType) {
+    case 'abc':
+      return 'ABC Notation'
+    case 'jianpu':
+      return 'Jianpu Notation'
+    case 'scientific':
+      return 'Scientific Notation'
+    default:
+      return 'Notation'
+  }
 })
 
 /**
- * 处理 ABC 字符串
+ * 合并转换选项，确保有默认值
  */
-const processedAbcString = computed(() => {
+const mergedOptions = computed(() => {
+  return {
+    key: 'C',
+    meter: '4/4',
+    tempo: '120',
+    unitNoteLength: '1/4',
+    title: getDefaultTitle.value,
+    ...props.conversionOptions
+  }
+})
+
+/**
+ * 检查用户传入的 ABC 是否包含头部信息（仅 abc 类型）
+ */
+const hasUserHeader = computed(() => {
+  return props.notationType === 'abc' && hasAbcHeader(props.notes)
+})
+
+/**
+ * 将记谱法转换为 ABC 记谱法
+ */
+const abcString = computed(() => {
   if (!props.notes || !props.notes.trim()) {
     return ''
   }
+
   try {
-    return abcToAbc(props.notes, props.conversionOptions)
+    switch (props.notationType) {
+      case 'abc':
+        return abcToAbc(props.notes, mergedOptions.value)
+      case 'jianpu':
+        return jianpuToAbc(props.notes, mergedOptions.value as JianpuConversionOptions)
+      case 'scientific':
+        return scientificToAbc(props.notes, mergedOptions.value as ScientificConversionOptions)
+      default:
+        return ''
+    }
   } catch (err) {
-    console.error('Error processing ABC string:', err)
+    console.error('Error converting notation:', err)
     error.value = (err as Error).message
     return ''
   }
@@ -59,11 +112,11 @@ const processedAbcString = computed(() => {
  * 播放音符
  */
 async function play() {
-  if (!processedAbcString.value) {
+  if (!abcString.value) {
     return
   }
 
-  console.log('Playing ABC string:', processedAbcString.value)
+  console.log('Playing ABC string:', abcString.value)
   try {
     // 清除之前的错误
     error.value = null
@@ -72,7 +125,7 @@ async function play() {
     isPlaying.value = true
 
     // 播放音频
-    await audioPlayer!.play(processedAbcString.value)
+    await audioPlayer!.play(abcString.value)
   } catch (err) {
     console.error('Error playing audio:', err)
     error.value = (err as Error).message
@@ -119,15 +172,16 @@ defineExpose({
 </script>
 
 <template>
-  <div class="play-abc-note">
-    <!-- 显示 ABC 信息 -->
+  <div class="play-note">
+    <!-- 显示音符信息 -->
     <div
       class="note-info"
       :class="{ 'clickable': props.notes && props.notes.trim(), 'playing': isPlaying }"
       @click="props.notes && props.notes.trim() ? play() : null"
     >
       <div class="note-display">
-        <pre>{{ props.notes || '无 ABC 乐谱' }}</pre>
+        <pre v-if="notationType === 'abc'">{{ props.notes || '无乐谱' }}</pre>
+        <template v-else>{{ props.notes || '无音符' }}</template>
       </div>
       <div v-if="hasUserHeader" class="header-indicator">
         📝 包含头部信息
@@ -142,14 +196,15 @@ defineExpose({
 
     <!-- 显示五线谱（可选） -->
     <AbcSvg
-      v-if="showSheetMusic && processedAbcString"
-      :abc-str="processedAbcString"
+      v-if="showSheetMusic && abcString"
+      :abc-str="abcString"
+      :show-title="showTitle"
     />
   </div>
 </template>
 
 <style scoped>
-.play-abc-note {
+.play-note {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -184,8 +239,8 @@ defineExpose({
 }
 
 .note-display {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 1.2rem;
+  font-weight: 600;
   padding: 0.75rem;
   background: var(--va-c-bg-soft);
   border-radius: 0.5rem;

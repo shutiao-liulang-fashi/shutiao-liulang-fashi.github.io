@@ -71,7 +71,8 @@ export function jianpuToAbc(
     const current = convertedNotes[i];
 
     if (current === '\n') {
-      // 换行符：忽略，不添加到 ABC 字符串
+      // 换行符：保留换行符
+      abcNotes += '\n';
       needSpace = false;
     } else if (current) {
       // 正常音符

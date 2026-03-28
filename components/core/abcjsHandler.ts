@@ -298,8 +298,8 @@ export class AbcAudioPlayer {
    */
   dispose(): void {
     this.stop()
+    // synthController 不需要调用 dispose，只需停止播放并置空
     if (this.synthController) {
-      this.synthController.dispose()
       this.synthController = null
     }
     if (this.audioContext) {
@@ -311,8 +311,7 @@ export class AbcAudioPlayer {
       this.hiddenContainer.parentNode.removeChild(this.hiddenContainer)
       this.hiddenContainer = null
     }
-  }
-}
+  }}
 
 /**
  * ABC 五线谱渲染器

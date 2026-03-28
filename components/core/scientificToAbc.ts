@@ -57,7 +57,26 @@ export function scientificToAbc(
 
   // 解析并转换音符
   const notes = parseNotes(scientificNotes);
-  const abcNotes = notes.map(convertNoteToAbc).join(' ');
+  // 构建最终的 ABC 字符串，保留换行符
+  let abcNotes = '';
+  let needSpace = false; // 标记是否需要在下一个音符前添加空格
+
+  for (let i = 0; i < notes.length; i++) {
+    const current = convertNoteToAbc(notes[i]);
+
+    if (notes[i].specialSymbol === '\n') {
+      // 换行符：保留换行符
+      abcNotes += '\n';
+      needSpace = false;
+    } else if (current) {
+      // 正常音符
+      if (needSpace) {
+        abcNotes += ' ';
+      }
+      abcNotes += current;
+      needSpace = true; // 下一个非换行符需要空格
+    }
+  }
 
   // 生成 ABC 头部
   const header = generateHeader({
@@ -93,12 +112,22 @@ function tokenize(input: string): string[] {
   for (let i = 0; i < cleaned.length; i++) {
     const char = cleaned[i];
 
-    // 空格分隔标记
-    if (char === ' ' || char === '\t' || char === '\n') {
+    // 空格和制表符分隔标记
+    if (char === ' ' || char === '\t') {
       if (current) {
         tokens.push(current);
         current = '';
       }
+      continue;
+    }
+
+    // 换行符保留为单独的标记
+    if (char === '\n') {
+      if (current) {
+        tokens.push(current);
+        current = '';
+      }
+      tokens.push('\n'); // 保留换行符作为标记
       continue;
     }
 
@@ -164,6 +193,19 @@ function tokenize(input: string): string[] {
  * 解析单个标记
  */
 function parseToken(token: string): ParsedNote {
+  // 检查是否为换行符
+  if (token === '\n') {
+    return {
+      noteName: '',
+      accidental: '',
+      octave: 0,
+      durationModifiers: [],
+      hasTie: false,
+      isRest: false,
+      specialSymbol: '\n'
+    };
+  }
+
   // 检查是否为特殊符号（包括组合符号）
   const specialSymbols = ['|', ':', '(', ')', '[', ']', '||', '|:', ':|', '::', '|::', '::|'];
   if (specialSymbols.includes(token)) {

@@ -8,6 +8,8 @@ interface Props {
   abcStr: string
   /** 渲染选项 */
   options?: ABCJS.RenderOptions
+  /** 是否显示标题 */
+  showTitle?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -19,6 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
     paddingleft: 10,
     paddingright: 10,
   }),
+  showTitle: false,
 })
 
 const abcContainer = ref<HTMLDivElement | null>(null)
@@ -39,7 +42,7 @@ async function renderAbc() {
   }
 
   try {
-    await renderer!.render(props.abcStr, props.options)
+    await renderer!.render(props.abcStr, props.options, props.showTitle)
     loading.value = false
     error.value = null
   } catch (err) {

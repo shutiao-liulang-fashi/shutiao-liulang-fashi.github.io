@@ -13,6 +13,10 @@ const sidebar =  [
       {
         text: '介绍',
         link: '/yueli/',
+      },
+       {
+        text: '游乐场',
+        link: '/yueli/playground/',
       }
     ],
   },
