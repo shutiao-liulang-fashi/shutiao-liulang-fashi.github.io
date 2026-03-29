@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { abcToAbc, type AbcConversionOptions, hasAbcHeader } from './core/abcToAbc'
 import { jianpuToAbc, type ConversionOptions as JianpuConversionOptions } from './core/jianpuToAbc'
 import { scientificToAbc, type ConversionOptions as ScientificConversionOptions } from './core/scientificToAbc'
-import { AbcAudioPlayer } from './core/abcjsHandler'
-import AbcSvg from './AbcSvg.vue'
+import { AbcHandler } from './core/abcjsHandler'
 
 type NotationType = 'abc' | 'jianpu' | 'scientific'
 
@@ -43,8 +42,11 @@ const props = withDefaults(defineProps<Props>(), {
 // 错误状态
 const error = ref<string | null>(null)
 
-// 音频播放器实例（使用全局单例）
-const audioPlayer = ref<AbcAudioPlayer | null>(null)
+// ABC 处理器实例
+const abcHandler = ref<AbcHandler | null>(null)
+
+// 渲染容器引用
+const sheetMusicContainer = ref<HTMLDivElement | null>(null)
 
 /**
  * 根据 notationType 获取默认标题
@@ -110,18 +112,77 @@ const abcString = computed(() => {
 })
 
 
-// 组件挂载时初始化音频播放器
-onMounted(() => {
-  // 创建播放器实例
-  audioPlayer.value = new AbcAudioPlayer()
+// 组件挂载时初始化 ABC 处理器
+onMounted(async () => {
+  // 创建处理器实例
+  abcHandler.value = new AbcHandler({
+    abcString: abcString.value,
+    enablePlayback: true,
+    enableRender: props.showSheetMusic,
+    container: props.showSheetMusic ? sheetMusicContainer.value : undefined,
+    showTitle: props.showTitle,
+    tempo: parseInt(mergedOptions.value.tempo, 10),
+    onPlay: () => {
+      // 可以在这里处理播放开始事件
+    },
+    onStop: () => {
+      // 可以在这里处理播放停止事件
+    }
+  })
+
+  // 如果启用了渲染，执行初始渲染
+  if (props.showSheetMusic && abcHandler.value) {
+    await abcHandler.value.render()
+  }
+})
+
+// 监听 abcString 变化，更新处理器
+watch(abcString, async (newAbcString) => {
+  if (abcHandler.value && newAbcString) {
+    await abcHandler.value.updateAbcString(newAbcString)
+  }
+})
+
+// 监听 showSheetMusic 变化
+watch(() => props.showSheetMusic, async (newValue) => {
+  if (abcHandler.value) {
+    // 重新创建处理器以更新配置
+    abcHandler.value.dispose()
+    abcHandler.value = new AbcHandler({
+      abcString: abcString.value,
+      enablePlayback: true,
+      enableRender: newValue,
+      container: newValue ? sheetMusicContainer.value : undefined,
+      showTitle: props.showTitle,
+      tempo: parseInt(mergedOptions.value.tempo, 10),
+      onPlay: () => {
+        // 可以在这里处理播放开始事件
+      },
+      onStop: () => {
+        // 可以在这里处理播放停止事件
+      }
+    })
+
+    // 如果启用了渲染，执行渲染
+    if (newValue) {
+      await abcHandler.value.render()
+    }
+  }
+})
+
+// 监听 showTitle 变化
+watch(() => props.showTitle, async (newValue) => {
+  if (abcHandler.value && props.showSheetMusic) {
+    await abcHandler.value.render()
+  }
 })
 
 // 组件卸载前清理
 onBeforeUnmount(() => {
-  // 销毁播放器实例，释放资源
-  if (audioPlayer.value) {
-    audioPlayer.value.dispose()
-    audioPlayer.value = null
+  // 销毁处理器实例，释放资源
+  if (abcHandler.value) {
+    abcHandler.value.dispose()
+    abcHandler.value = null
   }
 })
 
@@ -129,7 +190,7 @@ onBeforeUnmount(() => {
  * 播放音符
  */
 async function play() {
-  if (!abcString.value || !audioPlayer.value) {
+  if (!abcString.value || !abcHandler.value) {
     return
   }
 
@@ -139,7 +200,7 @@ async function play() {
     error.value = null
 
     // 播放音频
-    await audioPlayer.value.play(abcString.value)
+    await abcHandler.value.play()
   } catch (err) {
     console.error('Error playing audio:', err)
     error.value = (err as Error).message
@@ -150,8 +211,8 @@ async function play() {
  * 停止播放
  */
 function stop() {
-  if (audioPlayer.value) {
-    audioPlayer.value.stop()
+  if (abcHandler.value) {
+    abcHandler.value.stop()
   }
 }
 </script>
@@ -184,10 +245,7 @@ function stop() {
       :class="{ 'clickable': abcString }"
       @click="abcString ? play() : null"
     >
-      <AbcSvg
-        :abc-str="abcString"
-        :show-title="showTitle"
-      />
+      <div ref="sheetMusicContainer" class="abc-render-container" />
     </div>
   </div>
 </template>
@@ -267,5 +325,25 @@ function stop() {
 
 .sheet-music-container.clickable {
   cursor: pointer;
+}
+
+.abc-render-container {
+  width: 100%;
+  min-height: 100px;
+  overflow-x: auto;
+}
+
+.abc-render-container :deep(svg) {
+  display: block;
+  height: auto;
+  min-width: 100%;
+}
+
+.abc-render-container :deep(.abcjs-svg) {
+  width: 100% !important;
+}
+
+.abc-render-container :deep(.abcjs-system) {
+  width: 100% !important;
 }
 </style>

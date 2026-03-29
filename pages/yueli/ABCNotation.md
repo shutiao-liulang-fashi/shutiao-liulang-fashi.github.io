@@ -47,6 +47,6 @@ A/2 c/2 |
 d d d/2 e/4 d/4 c/2 d/2 |
 e/2 g/2 g/2 a/2 e g/2 e/2 |
 d g/2 e/2 d/2 A/2 A/2 c/2 |
-c2 z |" :showSheetMusic="true" :showNotes="false" :showTitle="false"/>
+c2 z |" :showSheetMusic="true" :showNotes="true" :showTitle="true"/>
 
 

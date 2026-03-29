@@ -185,7 +185,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue"
 import { abcToAbc } from "./core/abcToAbc"
 import { scientificToAbc, type ConversionOptions as ScientificConversionOptions } from "./core/scientificToAbc"
-import { AbcAudioPlayer } from "./core/abcjsHandler"
+import { AbcHandler } from "./core/abcjsHandler"
 
 // 音符类型定义
 interface Note {
@@ -282,11 +282,11 @@ let blinkTimeout: number | null = null
 // 播放状态
 const isPlaying = ref(false)
 
-// 使用 AbcAudioPlayer（全局单例）
-const audioPlayer = ref<AbcAudioPlayer | null>(null)
+// 主播放器实例
+const mainHandler = ref<AbcHandler | null>(null)
 
-// 单个音符播放器（独立实例）
-const singleNotePlayer = ref<AbcAudioPlayer | null>(null)
+// 单个音符播放器实例（独立实例）
+const singleNoteHandler = ref<AbcHandler | null>(null)
 
 // 弦标签
 const stringLabels = computed(() => {
@@ -432,13 +432,9 @@ function updateTuning() {
 
 
 // 播放
-
 async function play() {
-
-  if (!hasValidAbc.value || !audioPlayer.value) {
-
+  if (!hasValidAbc.value || !mainHandler.value) {
     return
-
   }
 
 
@@ -559,62 +555,36 @@ async function play() {
 
 
 
-    // 使用 AbcAudioPlayer 播放
+    // 更新处理器的 ABC 字符串
+    await mainHandler.value!.updateAbcString(processedAbc)
 
-    await audioPlayer.value.play(processedAbc, {
-
-      cursorControl,
-
-      tempo: parseInt(options.value.tempo, 10)
-
-    })
-
-
+    // 播放
+    await mainHandler.value!.play()
 
     isPlaying.value = true
-
   } catch (error) {
-
     console.error("播放失败:", error)
-
     isPlaying.value = false
-
   }
-
 }
 
 
 
 // 停止
-
 function stop() {
-
   // 清除定时器
-
   if (blinkTimeout !== null) {
-
     clearTimeout(blinkTimeout)
-
     blinkTimeout = null
-
   }
 
-
-
-  if (audioPlayer.value) {
-
-    audioPlayer.value.stop()
-
+  if (mainHandler.value) {
+    mainHandler.value.stop()
   }
-
-
 
   isPlaying.value = false
-
   currentNote.value = null
-
   currentPosition.value = null
-
 }
 
 // 播放单个音符
@@ -691,34 +661,49 @@ async function playSingleNote(stringIndex: number, fret: number) {
 
     }
 
-    // 使用独立的单个音符播放器
-
-    if (!singleNotePlayer.value) {
-
-      singleNotePlayer.value = new AbcAudioPlayer()
-
+    // 使用独立的单个音符处理器
+    if (!singleNoteHandler.value) {
+      singleNoteHandler.value = new AbcHandler({
+        abcString: abcString,
+        enablePlayback: true,
+        enableRender: false,
+        tempo: parseInt(options.value.tempo, 10),
+        onEvent: (event: any) => {
+          // 处理音符事件
+          if (event && event.midiPitches && event.midiPitches.length > 0) {
+            const midiPitchObj = event.midiPitches[0]
+            const note = midiPitchToNoteName(midiPitchObj.pitch)
+            if (note) {
+              currentNote.value = note
+              const positions = findPositions(note)
+              if (positions.length > 0) {
+                currentPosition.value = positions[0]
+                highlightPosition(positions[0].stringIndex, positions[0].fret)
+              }
+            }
+          }
+        },
+        onFinished: () => {
+          // 播放完成后清除显示
+          setTimeout(() => {
+            currentNote.value = null
+            currentPosition.value = null
+          }, 500)
+        }
+      })
+    } else {
+      // 更新 ABC 字符串
+      await singleNoteHandler.value.updateAbcString(abcString)
     }
 
-    // 停止单个音符播放器之前的播放
-
-    singleNotePlayer.value.stop()
+    // 停止单个音符处理器之前的播放
+    singleNoteHandler.value.stop()
 
     // 播放单个音符
-
-    await singleNotePlayer.value.play(abcString, {
-
-      cursorControl,
-
-      tempo: parseInt(options.value.tempo, 10)
-
-    })
-
+    await singleNoteHandler.value.play()
   } catch (error) {
-
     console.error('播放单个音符失败:', error)
-
   }
-
 }
 
 // 将 MIDI 音高转换为音符名称
@@ -740,18 +725,37 @@ function midiPitchToNoteName(pitch: number): Note | null {
 
 // 组件挂载时初始化
 onMounted(() => {
-  // 创建播放器实例
-  audioPlayer.value = new AbcAudioPlayer()
-
-  // 设置播放回调
-  audioPlayer.value.onPlay(() => {
-    isPlaying.value = true
-  })
-
-  audioPlayer.value.onStop(() => {
-    isPlaying.value = false
-    currentNote.value = null
-    currentPosition.value = null
+  // 创建主处理器实例
+  mainHandler.value = new AbcHandler({
+    abcString: '',
+    enablePlayback: true,
+    enableRender: false,
+    tempo: parseInt(options.value.tempo, 10),
+    onPlay: () => {
+      isPlaying.value = true
+    },
+    onStop: () => {
+      isPlaying.value = false
+      currentNote.value = null
+      currentPosition.value = null
+    },
+    cursorControl: {
+      onEvent: (event: any) => {
+        // 处理音符事件
+        if (event && event.midiPitches && event.midiPitches.length > 0) {
+          const midiPitchObj = event.midiPitches[0]
+          const note = midiPitchToNoteName(midiPitchObj.pitch)
+          if (note) {
+            currentNote.value = note
+            const positions = findPositions(note)
+            if (positions.length > 0) {
+              currentPosition.value = positions[0]
+              highlightPosition(positions[0].stringIndex, positions[0].fret)
+            }
+          }
+        }
+      }
+    }
   })
 })
 
@@ -763,16 +767,16 @@ onUnmounted(() => {
     blinkTimeout = null
   }
 
-  // 销毁主播放器实例，释放资源
-  if (audioPlayer.value) {
-    audioPlayer.value.dispose()
-    audioPlayer.value = null
+  // 销毁主处理器实例，释放资源
+  if (mainHandler.value) {
+    mainHandler.value.dispose()
+    mainHandler.value = null
   }
 
-  // 销毁单个音符播放器实例，释放资源
-  if (singleNotePlayer.value) {
-    singleNotePlayer.value.dispose()
-    singleNotePlayer.value = null
+  // 销毁单个音符处理器实例，释放资源
+  if (singleNoteHandler.value) {
+    singleNoteHandler.value.dispose()
+    singleNoteHandler.value = null
   }
 })
 </script>

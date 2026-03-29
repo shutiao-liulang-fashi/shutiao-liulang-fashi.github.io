@@ -19,6 +19,16 @@
   visibility: visible !important;
   z-index: 0 !important;
 }
+.abc-render-container.abcjs-container {
+  position: relative  !important;
+  left: 0px !important;
+  top: 0px !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow: auto !important;
+  visibility: visible !important;
+  z-index: 0 !important;
+}
 .render-container.abcjs-container {
   position: relative  !important;
   left: 0px !important;

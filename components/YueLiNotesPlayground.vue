@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { jianpuToScientific, type JianpuToScientificOptions } from './core/jianpuToScientific'
 import { jianpuToAbc, type ConversionOptions as JianpuConversionOptions } from './core/jianpuToAbc'
 import { scientificToAbc, type ConversionOptions as ScientificConversionOptions } from './core/scientificToAbc'
 import { abcToAbc, type AbcConversionOptions } from './core/abcToAbc'
-import { AbcAudioPlayer, AbcRenderer } from './core/abcjsHandler'
+import { AbcHandler } from './core/abcjsHandler'
 
 // 基音选项
 const baseNoteOptions = [
@@ -136,9 +136,6 @@ watch(selectedBaseNote, async () => {
   updateJianpuRendering()
   updateScientificRendering()
   updateAbcRendering()
-
-  // 更新播放器
-  updateAudioPlayers()
 })
 
 // 监听拍号变化
@@ -158,11 +155,20 @@ watch(selectedMeter, async () => {
   updateJianpuRendering()
   updateScientificRendering()
   updateAbcRendering()
-  updateAudioPlayers()
 })
 
 // 监听速度变化
 watch(selectedTempo, async () => {
+  // 更新处理器的 tempo 设置
+  if (jianpuHandler.value) {
+    jianpuHandler.value.setTempo(parseInt(selectedTempo.value, 10))
+  }
+  if (scientificHandler.value) {
+    scientificHandler.value.setTempo(parseInt(selectedTempo.value, 10))
+  }
+  if (abcHandler.value) {
+    abcHandler.value.setTempo(parseInt(selectedTempo.value, 10))
+  }
   await new Promise(resolve => setTimeout(resolve, 0))
 
   if (jianpuInput.value && jianpuInput.value.trim()) {
@@ -178,7 +184,6 @@ watch(selectedTempo, async () => {
   updateJianpuRendering()
   updateScientificRendering()
   updateAbcRendering()
-  updateAudioPlayers()
 })
 
 // 监听单位音符长度变化
@@ -198,7 +203,6 @@ watch(selectedUnitNoteLength, async () => {
   updateJianpuRendering()
   updateScientificRendering()
   updateAbcRendering()
-  updateAudioPlayers()
 })
 
 // 监听标题变化
@@ -218,7 +222,6 @@ watch(selectedTitle, async () => {
   updateJianpuRendering()
   updateScientificRendering()
   updateAbcRendering()
-  updateAudioPlayers()
 })
 
 // 输入框的值
@@ -245,15 +248,10 @@ const jianpuPlaying = ref(false)
 const scientificPlaying = ref(false)
 const abcPlaying = ref(false)
 
-// 音频播放器实例
-const jianpuPlayer = ref<AbcAudioPlayer | null>(null)
-const scientificPlayer = ref<AbcAudioPlayer | null>(null)
-const abcPlayer = ref<AbcAudioPlayer | null>(null)
-
-// 渲染器实例
-const jianpuRenderer = ref<AbcRenderer | null>(null)
-const scientificRenderer = ref<AbcRenderer | null>(null)
-const abcRenderer = ref<AbcRenderer | null>(null)
+// ABC 处理器实例（每个记谱法一个）
+const jianpuHandler = ref<AbcHandler | null>(null)
+const scientificHandler = ref<AbcHandler | null>(null)
+const abcHandler = ref<AbcHandler | null>(null)
 
 // 渲染容器引用
 const jianpuRenderContainer = ref<HTMLDivElement | null>(null)
@@ -431,12 +429,12 @@ watch(() => computedAbcFromScientific, () => {
 
 // 更新简谱渲染
 async function updateJianpuRendering() {
-  if (jianpuRenderer.value) {
+  if (jianpuHandler.value && jianpuRenderContainer.value) {
     try {
       if (computedAbcFromJianpu.value) {
-        await jianpuRenderer.value.update(computedAbcFromJianpu.value)
+        await jianpuHandler.value.updateAbcString(computedAbcFromJianpu.value)
       } else {
-        jianpuRenderer.value.clear()
+        jianpuHandler.value.clear()
       }
     } catch (err) {
       console.error('简谱渲染错误:', err)
@@ -446,12 +444,12 @@ async function updateJianpuRendering() {
 
 // 更新科学谱渲染
 async function updateScientificRendering() {
-  if (scientificRenderer.value) {
+  if (scientificHandler.value && scientificRenderContainer.value) {
     try {
       if (computedAbcFromScientific.value) {
-        await scientificRenderer.value.update(computedAbcFromScientific.value)
+        await scientificHandler.value.updateAbcString(computedAbcFromScientific.value)
       } else {
-        scientificRenderer.value.clear()
+        scientificHandler.value.clear()
       }
     } catch (err) {
       console.error('科学谱渲染错误:', err)
@@ -461,12 +459,12 @@ async function updateScientificRendering() {
 
 // 更新ABC谱渲染
 async function updateAbcRendering() {
-  if (abcRenderer.value) {
+  if (abcHandler.value && abcRenderContainer.value) {
     try {
       if (processedAbcInput.value) {
-        await abcRenderer.value.update(processedAbcInput.value)
+        await abcHandler.value.updateAbcString(processedAbcInput.value)
       } else {
-        abcRenderer.value.clear()
+        abcHandler.value.clear()
       }
     } catch (err) {
       console.error('ABC谱渲染错误:', err)
@@ -474,38 +472,13 @@ async function updateAbcRendering() {
   }
 }
 
-// 更新音频播放器
-async function updateAudioPlayers() {
-  if (computedAbcFromJianpu.value && jianpuPlayer.value) {
-    try {
-      await jianpuPlayer.value.update(computedAbcFromJianpu.value)
-    } catch (err) {
-      console.error('更新简谱播放器失败:', err)
-    }
-  }
-  if (computedAbcFromScientific.value && scientificPlayer.value) {
-    try {
-      await scientificPlayer.value.update(computedAbcFromScientific.value)
-    } catch (err) {
-      console.error('更新科学谱播放器失败:', err)
-    }
-  }
-  if (processedAbcInput.value && abcPlayer.value) {
-    try {
-      await abcPlayer.value.update(processedAbcInput.value)
-    } catch (err) {
-      console.error('更新 ABC谱播放器失败:', err)
-    }
-  }
-}
-
 // 简谱播放功能
 async function playJianpu() {
-  if (!computedAbcFromJianpu.value || !jianpuPlayer.value) return
+  if (!computedAbcFromJianpu.value || !jianpuHandler.value) return
 
   try {
     jianpuPlaying.value = true
-    await jianpuPlayer.value.play(computedAbcFromJianpu.value)
+    await jianpuHandler.value.play()
   } catch (err) {
     console.error('简谱播放错误:', err)
     jianpuPlaying.value = false
@@ -513,19 +486,19 @@ async function playJianpu() {
 }
 
 function stopJianpu() {
-  if (jianpuPlayer.value) {
-    jianpuPlayer.value.stop()
+  if (jianpuHandler.value) {
+    jianpuHandler.value.stop()
     jianpuPlaying.value = false
   }
 }
 
 // 科学谱播放功能
 async function playScientific() {
-  if (!computedAbcFromScientific.value || !scientificPlayer.value) return
+  if (!computedAbcFromScientific.value || !scientificHandler.value) return
 
   try {
     scientificPlaying.value = true
-    await scientificPlayer.value.play(computedAbcFromScientific.value)
+    await scientificHandler.value.play()
   } catch (err) {
     console.error('科学谱播放错误:', err)
     scientificPlaying.value = false
@@ -533,19 +506,19 @@ async function playScientific() {
 }
 
 function stopScientific() {
-  if (scientificPlayer.value) {
-    scientificPlayer.value.stop()
+  if (scientificHandler.value) {
+    scientificHandler.value.stop()
     scientificPlaying.value = false
   }
 }
 
 // ABC谱播放功能
 async function playAbc() {
-  if (!processedAbcInput.value || !abcPlayer.value) return
+  if (!processedAbcInput.value || !abcHandler.value) return
 
   try {
     abcPlaying.value = true
-    await abcPlayer.value.play(processedAbcInput.value)
+    await abcHandler.value.play()
   } catch (err) {
     console.error('ABC谱播放错误:', err)
     abcPlaying.value = false
@@ -553,46 +526,75 @@ async function playAbc() {
 }
 
 function stopAbc() {
-  if (abcPlayer.value) {
-    abcPlayer.value.stop()
+  if (abcHandler.value) {
+    abcHandler.value.stop()
     abcPlaying.value = false
   }
 }
 
 // 组件挂载时初始化
 onMounted(async () => {
-  // 初始化音频播放器
-  jianpuPlayer.value = new AbcAudioPlayer()
-  scientificPlayer.value = new AbcAudioPlayer()
-  abcPlayer.value = new AbcAudioPlayer()
-
-  // 设置播放回调
-  jianpuPlayer.value.onPlay(() => { jianpuPlaying.value = true })
-  jianpuPlayer.value.onStop(() => { jianpuPlaying.value = false })
-
-  scientificPlayer.value.onPlay(() => { scientificPlaying.value = true })
-  scientificPlayer.value.onStop(() => { scientificPlaying.value = false })
-
-  abcPlayer.value.onPlay(() => { abcPlaying.value = true })
-  abcPlayer.value.onStop(() => { abcPlaying.value = false })
-
-  // 初始化渲染器
-  if (jianpuRenderContainer.value) {
-    jianpuRenderer.value = new AbcRenderer(jianpuRenderContainer.value)
-    jianpuRenderer.value.enableResponsive()
-  }
-
-  if (scientificRenderContainer.value) {
-    scientificRenderer.value = new AbcRenderer(scientificRenderContainer.value)
-    scientificRenderer.value.enableResponsive()
-  }
-
-  if (abcRenderContainer.value) {
-    abcRenderer.value = new AbcRenderer(abcRenderContainer.value)
-    abcRenderer.value.enableResponsive()
-  }
-
   // 等待 nextTick 确保 DOM 已更新
+  await nextTick()
+
+  // 初始化简谱处理器（播放+渲染）
+  if (jianpuRenderContainer.value) {
+    jianpuHandler.value = new AbcHandler({
+      abcString: computedAbcFromJianpu.value,
+      enablePlayback: true,
+      enableRender: true,
+      container: jianpuRenderContainer.value,
+      tempo: parseInt(selectedTempo.value),
+      onPlay: () => { jianpuPlaying.value = true },
+      onStop: () => { jianpuPlaying.value = false },
+      onNoteClick: (noteIndex, noteElement) => {
+        console.log('点击简谱音符:', noteIndex)
+        jianpuHandler.value?.playFromNote(noteIndex)
+      },
+      responsive: true
+    })
+    await jianpuHandler.value.render()
+  }
+
+  // 初始化科学谱处理器（播放+渲染）
+  if (scientificRenderContainer.value) {
+    scientificHandler.value = new AbcHandler({
+      abcString: computedAbcFromScientific.value,
+      enablePlayback: true,
+      enableRender: true,
+      container: scientificRenderContainer.value,
+      tempo: parseInt(selectedTempo.value),
+      onPlay: () => { scientificPlaying.value = true },
+      onStop: () => { scientificPlaying.value = false },
+      onNoteClick: (noteIndex, noteElement) => {
+        console.log('点击科学谱音符:', noteIndex)
+        scientificHandler.value?.playFromNote(noteIndex)
+      },
+      responsive: true
+    })
+    await scientificHandler.value.render()
+  }
+
+  // 初始化 ABC 谱处理器（播放+渲染）
+  if (abcRenderContainer.value) {
+    abcHandler.value = new AbcHandler({
+      abcString: processedAbcInput.value,
+      enablePlayback: true,
+      enableRender: true,
+      container: abcRenderContainer.value,
+      tempo: parseInt(selectedTempo.value),
+      onPlay: () => { abcPlaying.value = true },
+      onStop: () => { abcPlaying.value = false },
+      onNoteClick: (noteIndex, noteElement) => {
+        console.log('点击ABC谱音符:', noteIndex)
+        abcHandler.value?.playFromNote(noteIndex)
+      },
+      responsive: true
+    })
+    await abcHandler.value.render()
+  }
+
+  // 等待初始化完成
   await new Promise(resolve => setTimeout(resolve, 100))
 
   // 手动触发初始值的转换（如果有默认值）
@@ -607,44 +609,26 @@ onMounted(async () => {
     const abcBody = bodyStartIndex >= 0 ? lines.slice(bodyStartIndex + 1).join('\n').trim() : abcWithCorrectTitle
     abcInput.value = abcBody
   }
-
-  // 初始渲染
-  updateJianpuRendering()
-  updateScientificRendering()
-  updateAbcRendering()
-
-  // 初始化音频播放器
-  updateAudioPlayers()
 })
 
 // 组件卸载时清理资源
 onBeforeUnmount(() => {
-  // 清理音频播放器
-  if (jianpuPlayer.value) {
-    jianpuPlayer.value.dispose()
-    jianpuPlayer.value = null
-  }
-  if (scientificPlayer.value) {
-    scientificPlayer.value.dispose()
-    scientificPlayer.value = null
-  }
-  if (abcPlayer.value) {
-    abcPlayer.value.dispose()
-    abcPlayer.value = null
+  // 清理简谱处理器
+  if (jianpuHandler.value) {
+    jianpuHandler.value.dispose()
+    jianpuHandler.value = null
   }
 
-  // 清理渲染器
-  if (jianpuRenderer.value) {
-    jianpuRenderer.value.dispose()
-    jianpuRenderer.value = null
+  // 清理科学谱处理器
+  if (scientificHandler.value) {
+    scientificHandler.value.dispose()
+    scientificHandler.value = null
   }
-  if (scientificRenderer.value) {
-    scientificRenderer.value.dispose()
-    scientificRenderer.value = null
-  }
-  if (abcRenderer.value) {
-    abcRenderer.value.dispose()
-    abcRenderer.value = null
+
+  // 清理 ABC 谱处理器
+  if (abcHandler.value) {
+    abcHandler.value.dispose()
+    abcHandler.value = null
   }
 })
 </script>
