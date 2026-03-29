@@ -790,9 +790,35 @@ const abcString = scientificToAbc('C4 D4 E4 F4', {
 
 ---
 
-**最后更新**: 2026-03-28 (第二次更新)
+**最后更新**: 2026-03-29
 
 ## 更新日志
+
+### 2026-03-29
+- 优化 abcjsHandler.ts 音频播放器
+  - 修复 AudioContext 关闭后无法重新播放的问题
+  - 改为每个实例创建独立的 AudioContext，避免实例间相互影响
+  - 移除全局单例模式，所有组件改为独立实例化
+  - 优化 initAudioContext() 方法，自动处理 closed 状态
+  - 优化 dispose() 方法，添加完善的错误处理
+- 优化 GoToPage.vue 加载页面
+  - 移除进度条和百分比显示
+  - 优化加载逻辑，使用真实的页面加载状态
+  - 添加文字跳动动画效果
+  - 引用《奇诺之旅》台词：The world is not beautiful. Therefore, it is.
+- 修复 Yueqin.vue 月琴组件
+  - 修复点击方块无法播放的问题
+  - 使用 scientificToAbc 正确转换科学记谱法
+  - 创建独立的单个音符播放器实例
+  - 实现播放完成后自动清除显示
+  - 单个音符播放不影响主播放/停止按钮状态
+- 优化 AbcRenderer 换行处理
+  - 移除 stretchlast 参数（新版本已不支持）
+  - 支持回车键换行（尊重用户输入的换行符）
+  - 简化 wrap 配置，使用 abcjs 默认行为
+- 修复 AudioContext 自动播放警告
+  - 从 update() 方法中移除 initAudioContext() 调用
+  - 确保只在用户交互时创建 AudioContext
 
 ### 2026-03-28 (第二次更新)
 - 重构音乐记谱法组件和文档结构

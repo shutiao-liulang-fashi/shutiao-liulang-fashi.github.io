@@ -38,13 +38,17 @@ let renderer: AbcRenderer | null = null
  */
 async function renderAbc() {
   if (!abcContainer.value || !props.abcStr) {
+    console.log('渲染失败：容器或 ABC 字符串为空')
     return
   }
+
+  console.log('开始渲染 ABC:', props.abcStr.substring(0, 100) + '...')
 
   try {
     await renderer!.render(props.abcStr, props.options, props.showTitle)
     loading.value = false
     error.value = null
+    console.log('渲染成功')
   } catch (err) {
     console.error('Error rendering ABC notation:', err)
     error.value = (err as Error).message

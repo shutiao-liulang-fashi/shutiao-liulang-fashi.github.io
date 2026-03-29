@@ -23,6 +23,8 @@ interface Props {
   showSheetMusic?: boolean
   /** 是否显示五线谱标题 */
   showTitle?: boolean
+  /** 是否显示音符信息 */
+  showNotes?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -35,15 +37,14 @@ const props = withDefaults(defineProps<Props>(), {
   }),
   showSheetMusic: false,
   showTitle: false,
+  showNotes: true,
 })
 
-// 当前是否正在播放
-const isPlaying = ref(false)
 // 错误状态
 const error = ref<string | null>(null)
 
-// 音频播放器实例
-let audioPlayer: AbcAudioPlayer | null = null
+// 音频播放器实例（使用全局单例）
+const audioPlayer = ref<AbcAudioPlayer | null>(null)
 
 /**
  * 根据 notationType 获取默认标题
@@ -108,11 +109,27 @@ const abcString = computed(() => {
   }
 })
 
+
+// 组件挂载时初始化音频播放器
+onMounted(() => {
+  // 创建播放器实例
+  audioPlayer.value = new AbcAudioPlayer()
+})
+
+// 组件卸载前清理
+onBeforeUnmount(() => {
+  // 销毁播放器实例，释放资源
+  if (audioPlayer.value) {
+    audioPlayer.value.dispose()
+    audioPlayer.value = null
+  }
+})
+
 /**
  * 播放音符
  */
 async function play() {
-  if (!abcString.value) {
+  if (!abcString.value || !audioPlayer.value) {
     return
   }
 
@@ -121,15 +138,11 @@ async function play() {
     // 清除之前的错误
     error.value = null
 
-    // 设置播放状态（在播放开始前就设置，给用户更好的反馈）
-    isPlaying.value = true
-
     // 播放音频
-    await audioPlayer!.play(abcString.value)
+    await audioPlayer.value.play(abcString.value)
   } catch (err) {
     console.error('Error playing audio:', err)
     error.value = (err as Error).message
-    isPlaying.value = false
   }
 }
 
@@ -137,46 +150,19 @@ async function play() {
  * 停止播放
  */
 function stop() {
-  if (audioPlayer) {
-    audioPlayer.stop()
+  if (audioPlayer.value) {
+    audioPlayer.value.stop()
   }
 }
-
-// 组件挂载时初始化音频播放器
-onMounted(() => {
-  audioPlayer = new AbcAudioPlayer()
-
-  // 设置播放状态回调
-  audioPlayer.onPlay(() => {
-    isPlaying.value = true
-  })
-
-  audioPlayer.onStop(() => {
-    isPlaying.value = false
-  })
-})
-
-// 组件卸载时清理资源
-onBeforeUnmount(() => {
-  if (audioPlayer) {
-    audioPlayer.dispose()
-    audioPlayer = null
-  }
-})
-
-// 暴露方法给父组件
-defineExpose({
-  play,
-  stop,
-})
 </script>
 
 <template>
   <div class="play-note">
     <!-- 显示音符信息 -->
     <div
+      v-if="showNotes"
       class="note-info"
-      :class="{ 'clickable': props.notes && props.notes.trim(), 'playing': isPlaying }"
+      :class="{ 'clickable': props.notes && props.notes.trim() }"
       @click="props.notes && props.notes.trim() ? play() : null"
     >
       <div class="note-display">
@@ -186,20 +172,23 @@ defineExpose({
       <div v-if="hasUserHeader" class="header-indicator">
         📝 包含头部信息
       </div>
-      <div v-if="isPlaying" class="playing-indicator">
-        ▶ 播放中...
-      </div>
       <div v-if="error" class="error-message">
         {{ error }}
       </div>
     </div>
 
     <!-- 显示五线谱（可选） -->
-    <AbcSvg
+    <div
       v-if="showSheetMusic && abcString"
-      :abc-str="abcString"
-      :show-title="showTitle"
-    />
+      class="sheet-music-container"
+      :class="{ 'clickable': abcString }"
+      @click="abcString ? play() : null"
+    >
+      <AbcSvg
+        :abc-str="abcString"
+        :show-title="showTitle"
+      />
+    </div>
   </div>
 </template>
 
@@ -216,26 +205,11 @@ defineExpose({
   gap: 0.5rem;
   padding: 0.5rem;
   border-radius: 0.5rem;
-  transition: all 0.2s ease;
   position: relative;
 }
 
 .note-info.clickable {
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.note-info.clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.note-info.clickable:active {
-  transform: translateY(0);
-}
-
-.note-info.playing {
-  border: 2px solid var(--va-c-primary);
 }
 
 .note-display {
@@ -273,30 +247,6 @@ defineExpose({
   z-index: 10;
 }
 
-.playing-indicator {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  color: var(--va-c-primary);
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 0.25rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  animation: pulse 1.5s ease-in-out infinite;
-  z-index: 10;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
 .error-message {
   padding: 0.5rem 0.75rem;
   background: var(--va-c-error-bg);
@@ -304,5 +254,18 @@ defineExpose({
   border-radius: 0.375rem;
   font-size: 0.875rem;
   text-align: center;
+}
+
+.sheet-music-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  position: relative;
+}
+
+.sheet-music-container.clickable {
+  cursor: pointer;
 }
 </style>

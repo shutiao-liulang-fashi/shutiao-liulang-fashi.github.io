@@ -9,37 +9,76 @@ const props = withDefaults(defineProps<Props>(), {
   targetUrl: '/'
 })
 
-const progress = ref(0)
+const loadingStatus = ref('加载中...')
 
 onMounted(() => {
   // 保存当前页面的 title
   const originalTitle = document.title
 
-  // 进度条动画
-  let value = 0
-  const interval = setInterval(() => {
-    value += 10
-    progress.value = value
-    if (value >= 100) {
-      clearInterval(interval)
+  // 阶段 1: DOMContentLoaded
+  const handleDOMContentLoaded = () => {
+    loadingStatus.value = '加载页面结构...'
+  }
+
+  // 阶段 2: 资源加载完成
+  const handleLoad = () => {
+    loadingStatus.value = '加载资源中...'
+    // 模拟一些异步操作
+    setTimeout(() => {
+      loadingStatus.value = '准备跳转...'
       setTimeout(() => {
-        // 跳转前清除 title 监听
-        window.location.href = props.targetUrl
-        window.document.title = originalTitle
-      }, 500)
-    }
-  }, 10)
+        loadingStatus.value = '完成'
+        setTimeout(() => {
+          // 跳转
+          window.location.href = props.targetUrl
+          window.document.title = originalTitle
+        }, 300)
+      }, 200)
+    }, 300)
+  }
+
+  // 监听 DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', handleDOMContentLoaded)
+  } else {
+    handleDOMContentLoaded()
+  }
+
+  // 监听 window.load
+  if (document.readyState === 'complete') {
+    handleLoad()
+  } else {
+    window.addEventListener('load', handleLoad)
+  }
+
+  // 安全超时：如果加载太慢，强制跳转
+  setTimeout(() => {
+    loadingStatus.value = '超时跳转...'
+    setTimeout(() => {
+      window.location.href = props.targetUrl
+      window.document.title = originalTitle
+    }, 300)
+  }, 5000) // 5秒超时
 })
 </script>
 
 <template>
   <div class="goto-page">
     <div class="loader">
-      <div class="spinner"></div>
-      <div class="progress-bar">
-        <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+      <div class="quote">
+        <span class="word">The</span>
+        <span class="word">world</span>
+        <span class="word">is</span>
+        <span class="word">not</span>
+        <span class="word">beautiful.</span>
+        <br>
+        <span class="word">Therefore,</span>
+        <span class="word">it</span>
+        <span class="word">is.</span>
+        <br>
+        <span class="author">-《奇诺之旅》</span>
       </div>
-      <p class="loading-text">加载中 {{ progress }}%</p>
+      <p class="loading-text">{{ loadingStatus }}</p>
     </div>
   </div>
 </template>
@@ -51,8 +90,9 @@ onMounted(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 9999;
@@ -60,46 +100,55 @@ onMounted(() => {
 
 .loader {
   text-align: center;
-  color: white;
+  color: #333;
+  padding: 40px;
 }
 
-.spinner {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 30px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.quote {
+  font-size: 28px;
+  font-weight: 400;
+  color: #555;
+  margin-bottom: 40px;
+  line-height: 1.8;
+  letter-spacing: 0.5px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+.word {
+  display: inline-block;
+  animation: bounce 0.6s ease-in-out infinite;
+}
+
+.word:nth-child(1) { animation-delay: 0s; }
+.word:nth-child(2) { animation-delay: 0.1s; }
+.word:nth-child(3) { animation-delay: 0.2s; }
+.word:nth-child(4) { animation-delay: 0.3s; }
+.word:nth-child(5) { animation-delay: 0.4s; }
+.word:nth-child(6) { animation-delay: 0.5s; }
+.word:nth-child(7) { animation-delay: 0.6s; }
+.word:nth-child(8) { animation-delay: 0.7s; }
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 
-.progress-bar {
-  width: 300px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  overflow: hidden;
-  margin: 0 auto 20px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: white;
-  transition: width 0.02s linear;
-  border-radius: 2px;
+.author {
+  font-size: 24px;
+  color: #888;
+  font-style: italic;
+  display: block;
+  animation: none;
 }
 
 .loading-text {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
   margin: 0;
-  opacity: 0.9;
+  color: #666;
 }
 </style>
 

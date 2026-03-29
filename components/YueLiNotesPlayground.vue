@@ -519,11 +519,6 @@ function stopJianpu() {
   }
 }
 
-function resetJianpu() {
-  stopJianpu()
-  jianpuInput.value = ''
-}
-
 // 科学谱播放功能
 async function playScientific() {
   if (!computedAbcFromScientific.value || !scientificPlayer.value) return
@@ -544,11 +539,6 @@ function stopScientific() {
   }
 }
 
-function resetScientific() {
-  stopScientific()
-  scientificInput.value = ''
-}
-
 // ABC谱播放功能
 async function playAbc() {
   if (!processedAbcInput.value || !abcPlayer.value) return
@@ -567,11 +557,6 @@ function stopAbc() {
     abcPlayer.value.stop()
     abcPlaying.value = false
   }
-}
-
-function resetAbc() {
-  stopAbc()
-  abcInput.value = ''
 }
 
 // 组件挂载时初始化
@@ -803,13 +788,6 @@ onBeforeUnmount(() => {
             >
               ⏹ 停止
             </button>
-            <button
-              class="btn btn-reset"
-              @click="resetJianpu"
-              :disabled="!jianpuInput.trim()"
-            >
-              ↺ 复位
-            </button>
           </div>
         </div>
         <div class="abc-string-row">
@@ -847,13 +825,6 @@ onBeforeUnmount(() => {
             >
               ⏹ 停止
             </button>
-            <button
-              class="btn btn-reset"
-              @click="resetScientific"
-              :disabled="!scientificInput.trim()"
-            >
-              ↺ 复位
-            </button>
           </div>
         </div>
         <div class="abc-string-row">
@@ -890,13 +861,6 @@ onBeforeUnmount(() => {
               :disabled="!abcPlaying"
             >
               ⏹ 停止
-            </button>
-            <button
-              class="btn btn-reset"
-              @click="resetAbc"
-              :disabled="!abcInput.trim()"
-            >
-              ↺ 复位
             </button>
           </div>
         </div>
@@ -1155,17 +1119,6 @@ onBeforeUnmount(() => {
   box-shadow: 0 2px 8px rgba(var(--va-c-error-rgb), 0.3);
 }
 
-.btn-reset {
-  background: var(--va-c-warning);
-  color: var(--va-c-text);
-}
-
-.btn-reset:hover:not(:disabled) {
-  background: var(--va-c-warning-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(var(--va-c-warning-rgb), 0.3);
-}
-
 .abc-string-row {
   display: flex;
   flex-direction: column;
@@ -1205,6 +1158,7 @@ onBeforeUnmount(() => {
 }
 
 .render-container {
+  position:  relative !important;
   width: 100%;
   min-width: 0;
   min-height: 120px;

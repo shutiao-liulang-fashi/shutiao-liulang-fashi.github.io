@@ -1,1 +1,31 @@
 // you can custom css here
+
+.abcjs-container {
+  position: fixed !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  width: 0px !important;
+  height: 0px !important;
+  z-index: -1 !important;
+}
+
+.abc-svg-container.abcjs-container {
+  position: relative  !important;
+  left: 0px !important;
+  top: 0px !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow: auto !important;
+  visibility: visible !important;
+  z-index: 0 !important;
+}
+.render-container.abcjs-container {
+  position: relative  !important;
+  left: 0px !important;
+  top: 0px !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow: auto !important;
+  visibility: visible !important;
+  z-index: 0 !important;
+}

@@ -14,9 +14,17 @@ const sidebar =  [
         text: '介绍',
         link: '/yueli/',
       },
+      {
+        text: 'ABC 乐谱',
+        link: '/yueli/ABCNotation/',
+      },
        {
         text: '游乐场',
         link: '/yueli/playground/',
+      },
+      {
+        text: '月琴',
+        link: '/yueli/p_yueqin/',
       }
     ],
   },

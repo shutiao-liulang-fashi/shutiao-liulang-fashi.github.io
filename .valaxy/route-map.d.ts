@@ -104,6 +104,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/yueli/p_yueqin': RouteRecordInfo<
+      '/yueli/p_yueqin',
+      '/yueli/p_yueqin',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/yueli/playground': RouteRecordInfo<
       '/yueli/playground',
       '/yueli/playground',
@@ -187,6 +194,12 @@ declare module 'vue-router/auto-routes' {
     'pages/yueli/ABCNotation.md': {
       routes:
         | '/yueli/ABCNotation'
+      views:
+        | never
+    }
+    'pages/yueli/p_yueqin.md': {
+      routes:
+        | '/yueli/p_yueqin'
       views:
         | never
     }

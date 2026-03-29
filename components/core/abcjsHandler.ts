@@ -1,12 +1,37 @@
 import * as ABCJS from "abcjs"
 
 /**
+ * 游标控制器回调类型
+ * 用于处理播放过程中的事件
+ */
+export interface CursorControl {
+  /** 节拍回调 */
+  onBeat?: (beatNumber: number, totalBeats: number, totalTime: number, position: number) => void
+  /** 音符事件回调 */
+  onEvent?: (event: any) => void
+  /** 播放完成回调 */
+  onFinished?: () => void
+  /** 行结束回调 */
+  onLineEnd?: (lineEvent: any, leftEvent: any) => void
+  /** 播放开始回调 */
+  onStart?: () => void
+  /** 准备就绪回调 */
+  onReady?: (synthController: any) => void
+  /** 额外小节数 */
+  extraMeasuresAtBeginning?: number
+  /** 行结束提前量 */
+  lineEndAnticipation?: number
+  /** 节拍细分 */
+  beatSubdivisions?: number
+}
+
+/**
  * ABC 音频播放器
  * 封装了使用 abcjs 播放音频的功能
  */
 export class AbcAudioPlayer {
   private audioContext: AudioContext | null = null
-  private synthController: ABCJS.synth.SynthController | null = null
+  private synthController: any = null // 使用 any 类型，因为 abcjs 的类型定义可能不完整
   private hiddenContainer: HTMLElement | null = null
   private isPlayingState = false
   private onPlayCallback?: () => void
@@ -27,7 +52,7 @@ export class AbcAudioPlayer {
    */
   private createHiddenContainer(): void {
     const container = document.createElement('div')
-    container.className = 'abc-audio-hidden-container'
+    // 使用更强的隐藏样式
     container.style.cssText = `
       position: fixed !important;
       left: -9999px !important;
@@ -37,6 +62,9 @@ export class AbcAudioPlayer {
       overflow: hidden !important;
       z-index: -1 !important;
       visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      display: none !important;
     `
     document.body.appendChild(container)
     this.hiddenContainer = container
@@ -46,30 +74,46 @@ export class AbcAudioPlayer {
    * 初始化音频上下文
    */
   private async initAudioContext(): Promise<void> {
-    if (!this.audioContext) {
+    // 如果 AudioContext 不存在或已关闭，创建新的
+    if (!this.audioContext || this.audioContext.state === 'closed') {
+      // 为每个实例创建独立的 AudioContext，而不是共享全局的
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
       ABCJS.synth.registerAudioContext(this.audioContext)
+    }
+
+    // 如果状态是 suspended，恢复它
+    if (this.audioContext.state === 'suspended') {
+      await this.audioContext.resume()
     }
   }
 
   /**
    * 播放 ABC 记谱法音频
    * @param abcString ABC 记谱法字符串
+   * @param options 可选参数
+   * @param options.cursorControl 自定义游标控制器
+   * @param options.tempo 播放速度（BPM）
    * @returns Promise<void>
    */
-  async play(abcString: string): Promise<void> {
+  async play(abcString: string, options?: {
+    cursorControl?: CursorControl
+    tempo?: number
+  }): Promise<void> {
     if (!abcString || !this.hiddenContainer) {
       throw new Error('ABC 字符串或容器为空')
     }
 
+    // 如果已经在播放，直接返回，避免重复播放
+    if (this.isPlayingState) {
+      console.log('正在播放中，忽略重复播放请求')
+      return
+    }
+
+    const { cursorControl, tempo } = options || {}
+
     try {
       // 初始化音频上下文
       await this.initAudioContext()
-
-      // 等待 AudioContext 完全准备好
-      if (this.audioContext && this.audioContext.state === 'suspended') {
-        await this.audioContext.resume()
-      }
 
       // 清空容器
       this.hiddenContainer.innerHTML = ''
@@ -80,16 +124,13 @@ export class AbcAudioPlayer {
       // 创建合成器控制器
       this.synthController = new ABCJS.synth.SynthController()
 
-      // 创建游标控制器
-      const cursorControl: ABCJS.synth.CursorControl = {
-        onBeat: (beatNumber: number, totalBeats: number, totalTime: number) => {
+      // 创建游标控制器（使用传入的或默认的）
+      const finalCursorControl: CursorControl = cursorControl || {
+        onBeat: (beatNumber: number, totalBeats: number, totalTime: number, position: number) => {
           // 不需要处理
         },
         onEvent: (event: any) => {
-          // ABCJS 的事件结构
-          if (event && event.midiPitches && event.midiPitches.length > 0) {
-            // 可以在这里处理音符事件
-          }
+          // 可以在这里处理音符事件
         },
         onFinished: () => {
           this.isPlayingState = false
@@ -103,19 +144,35 @@ export class AbcAudioPlayer {
       })
       const visualObj = visualObjs[0] // 获取第一个（通常只有一个）
 
+      if (!visualObj) {
+        throw new Error('渲染 ABC 失败')
+      }
+
       // 等待渲染完成
       await new Promise(resolve => setTimeout(resolve, 150))
 
-      // 加载并播放（使用音量参数）
-      this.synthController.load(this.hiddenContainer, cursorControl, {
-        soundFontVolumeMultiplier: this.volume,
+      // 加载游标控制器
+      this.synthController.load(this.hiddenContainer, finalCursorControl, {
+        displayLoop: false,
+        displayRestart: false,
+        displayPlay: false,
+        displayProgress: false,
+        displayWarp: false,
       })
 
       // 等待加载完成
       await new Promise(resolve => setTimeout(resolve, 200))
 
+      // 准备 setTune 参数
+      const audioParams: any = {
+        soundFontVolumeMultiplier: this.volume,
+      }
+      if (tempo) {
+        audioParams.qpm = tempo
+      }
+
       // 设置 tune 并播放
-      await this.synthController.setTune(visualObj, false, {})
+      await this.synthController.setTune(visualObj, false, audioParams)
 
       // 等待 setTune 完成，确保音频数据已准备好
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -129,6 +186,7 @@ export class AbcAudioPlayer {
       this.onPlayCallback?.()
     } catch (error) {
       this.isPlayingState = false
+      this.synthController = null
       throw new Error(`播放失败：${(error as Error).message}`)
     }
   }
@@ -137,13 +195,23 @@ export class AbcAudioPlayer {
    * 停止播放
    */
   stop(): void {
-    if (this.synthController && typeof this.synthController.stop === 'function') {
+    if (this.synthController) {
       try {
-        this.synthController.stop()
+        // 使用 destroy 方法来停止播放并清理资源
+        this.synthController.destroy()
       } catch (error) {
         console.error('停止播放时出错:', error)
       }
+      // 清空控制器
+      this.synthController = null
     }
+
+    // 清空容器
+    if (this.hiddenContainer) {
+      this.hiddenContainer.innerHTML = ''
+    }
+
+    // 重置播放状态
     this.isPlayingState = false
     this.onStopCallback?.()
   }
@@ -214,22 +282,11 @@ export class AbcAudioPlayer {
 
     try {
       // 停止当前播放
-      if (this.synthController && typeof this.synthController.stop === 'function') {
-        try {
-          this.synthController.stop()
-        } catch (error) {
-          console.error('停止播放时出错:', error)
-        }
-      }
+      this.stop()
       this.isPlayingState = false
 
-      // 初始化音频上下文
-      await this.initAudioContext()
-
-      // 等待 AudioContext 完全准备好
-      if (this.audioContext && this.audioContext.state === 'suspended') {
-        await this.audioContext.resume()
-      }
+      // 不在这里初始化音频上下文，避免在没有用户交互时创建 AudioContext
+      // AudioContext 将在 play() 方法中初始化
 
       // 清空容器
       this.hiddenContainer.innerHTML = ''
@@ -241,15 +298,12 @@ export class AbcAudioPlayer {
       this.synthController = new ABCJS.synth.SynthController()
 
       // 创建游标控制器
-      const cursorControl: ABCJS.synth.CursorControl = {
-        onBeat: (beatNumber: number, totalBeats: number, totalTime: number) => {
+      const finalCursorControl: CursorControl = {
+        onBeat: (beatNumber: number, totalBeats: number, totalTime: number, position: number) => {
           // 不需要处理
         },
         onEvent: (event: any) => {
-          // ABCJS 的事件结构
-          if (event && event.midiPitches && event.midiPitches.length > 0) {
-            // 可以在这里处理音符事件
-          }
+          // 可以在这里处理音符事件
         },
         onFinished: () => {
           this.isPlayingState = false
@@ -263,21 +317,32 @@ export class AbcAudioPlayer {
       })
       const visualObj = visualObjs[0] // 获取第一个（通常只有一个）
 
+      if (!visualObj) {
+        throw new Error('渲染 ABC 失败')
+      }
+
       // 等待渲染完成
       await new Promise(resolve => setTimeout(resolve, 150))
 
       // 加载（使用音量参数）
-      this.synthController.load(this.hiddenContainer, cursorControl, {
-        soundFontVolumeMultiplier: this.volume,
+      this.synthController.load(this.hiddenContainer, finalCursorControl, {
+        displayLoop: false,
+        displayRestart: false,
+        displayPlay: false,
+        displayProgress: false,
+        displayWarp: false,
       })
 
       // 等待加载完成
       await new Promise(resolve => setTimeout(resolve, 200))
 
       // 设置 tune（但不播放）
-      await this.synthController.setTune(visualObj, false, {})
+      await this.synthController.setTune(visualObj, false, {
+        soundFontVolumeMultiplier: this.volume,
+      })
     } catch (error) {
       this.isPlayingState = false
+      this.synthController = null
       throw new Error(`更新失败：${(error as Error).message}`)
     }
   }
@@ -297,25 +362,43 @@ export class AbcAudioPlayer {
    * 销毁播放器，释放资源
    */
   dispose(): void {
-    this.stop()
-    // synthController 不需要调用 dispose，只需停止播放并置空
+    // 先停止播放
     if (this.synthController) {
+      try {
+        this.synthController.destroy()
+      } catch (error) {
+        console.error('销毁控制器时出错:', error)
+      }
       this.synthController = null
     }
+
+    // 关闭并清空音频上下文
     if (this.audioContext) {
-      this.audioContext.close()
+      try {
+        if (this.audioContext.state !== 'closed') {
+          this.audioContext.close()
+        }
+      } catch (error) {
+        console.error('关闭 AudioContext 时出错:', error)
+      }
       this.audioContext = null
     }
+
     // 移除隐藏的容器
     if (this.hiddenContainer && this.hiddenContainer.parentNode) {
       this.hiddenContainer.parentNode.removeChild(this.hiddenContainer)
       this.hiddenContainer = null
     }
-  }}
+  }
+}
 
 /**
  * ABC 五线谱渲染器
  * 封装了使用 abcjs 渲染五线谱的功能
+ *
+ * 注意：abcjs 天然支持两种换行方式同时工作：
+ * 1. 手动换行：用户在 ABC 字符串中使用 % 符号，会始终被尊重
+ * 2. 自动换行：通过 preferredMeasuresPerLine 控制
  */
 export class AbcRenderer {
   private container: HTMLElement | null = null
@@ -327,7 +410,15 @@ export class AbcRenderer {
    * 构造函数
    * @param container 渲染容器
    */
-  constructor(container: HTMLElement | null) {
+  constructor(container: HTMLElement | null = null) {
+    this.container = container
+  }
+
+  /**
+   * 设置渲染容器
+   * @param container 渲染容器
+   */
+  setContainer(container: HTMLElement | null): void {
     this.container = container
   }
 
@@ -411,30 +502,30 @@ export class AbcRenderer {
         }
       }
 
-      // 确保最小宽度为 800，以保持一致性
-      containerWidth = Math.max(containerWidth, 800)
-
-      // 合并选项
-      const renderOptions: ABCJS.RenderOptions = {
+      // 配置换行参数
+      // abcjs 默认会尊重用户输入的换行符（回车）
+      // wrap 配置用于控制当没有手动换行时，如何自动换行
+      let renderOptions: ABCJS.RenderOptions = {
         responsive: "resize",
         scale: 1.0,
         paddingtop: 10,
         paddingbottom: 10,
         paddingleft: 20,
         paddingright: 20,
-        stretchlast: false, // 不拉伸最后一行
-        staffwidth: Math.max(containerWidth - 40, 400),
-        wrap: {
-          minSpacing: 1.0,     // 最小间距
-          maxSpacing: 1.6,     // 超过此值会换行
-          preferredMeasuresPerLine: 4, // 每行首选 4 个小节
-        },
-        ...options,
+      }
+
+      // 合并用户传入的选项
+      if (options) {
+        renderOptions = { ...renderOptions, ...options }
       }
 
       // 使用 abcjs 渲染
-      ABCJS.renderAbc(this.container, processedAbcStr, renderOptions)
+      console.log('开始渲染 ABC 字符串:', processedAbcStr.substring(0, 100) + '...')
+      console.log('渲染选项:', renderOptions)
+      const result = ABCJS.renderAbc(this.container, processedAbcStr, renderOptions)
+      console.log('渲染结果:', result)
     } catch (error) {
+      console.error('渲染 ABC 时出错:', error)
       throw new Error(`渲染失败：${(error as Error).message}`)
     }
   }
