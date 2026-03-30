@@ -46,8 +46,12 @@ const baseNoteOptions = [
   { label: 'B5', value: 'B5' },
 ]
 
-// 选中的基音
+// 选中的参数
 const selectedBaseNote = ref('C4')
+const selectedMeter = ref('4/4')
+const selectedTempo = ref('120')
+const selectedUnitNoteLength = ref('1/4')
+const selectedTitle = ref('')
 
 // 拍号选项
 const meterOptions = [
@@ -77,155 +81,14 @@ const unitNoteLengthOptions = [
   { label: '1/16', value: '1/16' },
 ]
 
-// 选中的参数
-const selectedMeter = ref('4/4')
-const selectedTempo = ref('120')
-const selectedUnitNoteLength = ref('1/4')
-const selectedTitle = ref('')
-
-// 转换选项（默认值）
-const jianpuOptions = ref<JianpuToScientificOptions>({
-  baseNote: 'C4'
-})
-
-const jianpuConversionOptions = ref<JianpuConversionOptions>({
-  key: 'C',
-  meter: '4/4',
-  tempo: '120',
-  unitNoteLength: '1/4',
-  title: '简谱',
-  baseNote: 'C4'
-})
-
-const scientificConversionOptions = ref<ScientificConversionOptions>({
-  key: 'C',
-  meter: '4/4',
-  tempo: '120',
-  unitNoteLength: '1/4',
-  title: '科学谱'
-})
-
-const abcConversionOptions = ref<AbcConversionOptions>({
-  key: 'C',
-  meter: '4/4',
-  tempo: '120',
-  unitNoteLength: '1/4',
-  title: 'ABC谱'
-})
-
-// 监听基音变化，更新所有相关选项并触发重新计算
-watch(selectedBaseNote, async () => {
-  // 等待下一个 tick，确保计算属性已更新
-  await new Promise(resolve => setTimeout(resolve, 0))
-
-  // 更新科学谱和ABC谱输入
-  if (jianpuInput.value && jianpuInput.value.trim()) {
-    scientificInput.value = computedScientificFromJianpu.value
-
-    // 替换标题为 "ABC" 并提取音符部分
-    const abcFromJianpu = computedAbcFromJianpu.value
-    const abcWithCorrectTitle = abcFromJianpu.replace(/^T:.*$/m, 'T:ABC')
-    // 提取音符部分（去除头部）
-    const lines = abcWithCorrectTitle.split('\n')
-    const bodyStartIndex = lines.findIndex(line => line.match(/^K:/))
-    const abcBody = bodyStartIndex >= 0 ? lines.slice(bodyStartIndex + 1).join('\n').trim() : abcWithCorrectTitle
-    abcInput.value = abcBody
-  }
-
-  // 更新渲染
-  updateJianpuRendering()
-  updateScientificRendering()
-  updateAbcRendering()
-})
-
-// 监听拍号变化
-watch(selectedMeter, async () => {
-  await new Promise(resolve => setTimeout(resolve, 0))
-
-  if (jianpuInput.value && jianpuInput.value.trim()) {
-    scientificInput.value = computedScientificFromJianpu.value
-    const abcFromJianpu = computedAbcFromJianpu.value
-    const abcWithCorrectTitle = abcFromJianpu.replace(/^T:.*$/m, 'T:ABC')
-    const lines = abcWithCorrectTitle.split('\n')
-    const bodyStartIndex = lines.findIndex(line => line.match(/^K:/))
-    const abcBody = bodyStartIndex >= 0 ? lines.slice(bodyStartIndex + 1).join('\n').trim() : abcWithCorrectTitle
-    abcInput.value = abcBody
-  }
-
-  updateJianpuRendering()
-  updateScientificRendering()
-  updateAbcRendering()
-})
-
-// 监听速度变化
-watch(selectedTempo, async () => {
-  // 更新处理器的 tempo 设置
-  if (jianpuHandler.value) {
-    jianpuHandler.value.setTempo(parseInt(selectedTempo.value, 10))
-  }
-  if (scientificHandler.value) {
-    scientificHandler.value.setTempo(parseInt(selectedTempo.value, 10))
-  }
-  if (abcHandler.value) {
-    abcHandler.value.setTempo(parseInt(selectedTempo.value, 10))
-  }
-  await new Promise(resolve => setTimeout(resolve, 0))
-
-  if (jianpuInput.value && jianpuInput.value.trim()) {
-    scientificInput.value = computedScientificFromJianpu.value
-    const abcFromJianpu = computedAbcFromJianpu.value
-    const abcWithCorrectTitle = abcFromJianpu.replace(/^T:.*$/m, 'T:ABC')
-    const lines = abcWithCorrectTitle.split('\n')
-    const bodyStartIndex = lines.findIndex(line => line.match(/^K:/))
-    const abcBody = bodyStartIndex >= 0 ? lines.slice(bodyStartIndex + 1).join('\n').trim() : abcWithCorrectTitle
-    abcInput.value = abcBody
-  }
-
-  updateJianpuRendering()
-  updateScientificRendering()
-  updateAbcRendering()
-})
-
-// 监听单位音符长度变化
-watch(selectedUnitNoteLength, async () => {
-  await new Promise(resolve => setTimeout(resolve, 0))
-
-  if (jianpuInput.value && jianpuInput.value.trim()) {
-    scientificInput.value = computedScientificFromJianpu.value
-    const abcFromJianpu = computedAbcFromJianpu.value
-    const abcWithCorrectTitle = abcFromJianpu.replace(/^T:.*$/m, 'T:ABC')
-    const lines = abcWithCorrectTitle.split('\n')
-    const bodyStartIndex = lines.findIndex(line => line.match(/^K:/))
-    const abcBody = bodyStartIndex >= 0 ? lines.slice(bodyStartIndex + 1).join('\n').trim() : abcWithCorrectTitle
-    abcInput.value = abcBody
-  }
-
-  updateJianpuRendering()
-  updateScientificRendering()
-  updateAbcRendering()
-})
-
-// 监听标题变化
-watch(selectedTitle, async () => {
-  await new Promise(resolve => setTimeout(resolve, 0))
-
-  if (jianpuInput.value && jianpuInput.value.trim()) {
-    scientificInput.value = computedScientificFromJianpu.value
-    const abcFromJianpu = computedAbcFromJianpu.value
-    const abcWithCorrectTitle = abcFromJianpu.replace(/^T:.*$/m, `T:${selectedTitle.value || 'ABC'}`)
-    const lines = abcWithCorrectTitle.split('\n')
-    const bodyStartIndex = lines.findIndex(line => line.match(/^K:/))
-    const abcBody = bodyStartIndex >= 0 ? lines.slice(bodyStartIndex + 1).join('\n').trim() : abcWithCorrectTitle
-    abcInput.value = abcBody
-  }
-
-  updateJianpuRendering()
-  updateScientificRendering()
-  updateAbcRendering()
-})
-
 // 输入框的值
 const jianpuInput = ref(`
+X:1
+T:简谱
+M:4/4
+L:1/4
+Q:120
+K:C
 6/2 1'/2 |
 2' 2'/2 1'/2 2'/2 3'/4 2'/4 1'/2 2'/2  |
 3'/2 5'/2 5'/2 6'/2 3'  3'/2 5'/2 |
@@ -239,6 +102,18 @@ const jianpuInput = ref(`
 `)
 const scientificInput = ref('')
 const abcInput = ref('')
+
+scientificInput.value = jianpuToScientific(jianpuInput.value, {
+  baseNote: selectedBaseNote.value
+})
+abcInput.value = jianpuToAbc(jianpuInput.value, {
+  key: 'C',
+  meter: selectedMeter.value,
+  tempo: selectedTempo.value,
+  unitNoteLength: selectedUnitNoteLength.value,
+  title: selectedTitle.value || '简谱',
+  baseNote: selectedBaseNote.value
+})
 
 // 当前选中的标签
 const selectedTab = ref<'jianpu' | 'scientific' | 'abc'>('jianpu')
@@ -258,173 +133,113 @@ const jianpuRenderContainer = ref<HTMLDivElement | null>(null)
 const scientificRenderContainer = ref<HTMLDivElement | null>(null)
 const abcRenderContainer = ref<HTMLDivElement | null>(null)
 
-// 计算属性：从简谱计算科学谱
-const computedScientificFromJianpu = computed(() => {
-  if (!jianpuInput.value || !jianpuInput.value.trim()) {
-    return ''
-  }
-  try {
-    // 创建新的选项对象，使用当前选中的基音
-    const currentOptions = { ...jianpuOptions.value, baseNote: selectedBaseNote.value }
-    return jianpuToScientific(jianpuInput.value, currentOptions)
-  } catch (err) {
-    console.error('简谱转科学谱错误:', err)
-    return ''
-  }
-})
-
-// 计算属性：从简谱计算ABC谱
+// 计算属性：从简谱计算ABC谱（用于渲染和播放）
 const computedAbcFromJianpu = computed(() => {
   if (!jianpuInput.value || !jianpuInput.value.trim()) {
     return ''
   }
   try {
-    // 创建新的选项对象，使用当前选中的所有参数
-    const currentOptions = {
-      ...jianpuConversionOptions.value,
-      baseNote: selectedBaseNote.value,
+    return jianpuToAbc(jianpuInput.value, {
+      key: 'C',
       meter: selectedMeter.value,
       tempo: selectedTempo.value,
       unitNoteLength: selectedUnitNoteLength.value,
-      title: selectedTitle.value || '简谱'
-    }
-    return jianpuToAbc(jianpuInput.value, currentOptions)
+      title: selectedTitle.value || '简谱',
+      baseNote: selectedBaseNote.value
+    })
   } catch (err) {
     console.error('简谱转ABC谱错误:', err)
     return ''
   }
 })
 
-// 计算属性：从科学谱计算ABC谱
+// 计算属性：从简谱计算科学谱（用于显示）
+const computedScientificFromJianpu = computed(() => {
+  if (!jianpuInput.value || !jianpuInput.value.trim()) {
+    return ''
+  }
+  try {
+    return jianpuToScientific(jianpuInput.value, {
+      baseNote: selectedBaseNote.value
+    })
+  } catch (err) {
+    console.error('简谱转科学谱错误:', err)
+    return ''
+  }
+})
+
+// 计算属性：从科学谱计算ABC谱（用于渲染和播放）
 const computedAbcFromScientific = computed(() => {
   if (!scientificInput.value || !scientificInput.value.trim()) {
     return ''
   }
   try {
-    // 创建新的选项对象，使用当前选中的所有参数
-    const currentOptions = {
-      ...scientificConversionOptions.value,
+    return scientificToAbc(scientificInput.value, {
+      key: 'C',
       meter: selectedMeter.value,
       tempo: selectedTempo.value,
       unitNoteLength: selectedUnitNoteLength.value,
       title: selectedTitle.value || '科学谱'
-    }
-    return scientificToAbc(scientificInput.value, currentOptions)
+    })
   } catch (err) {
     console.error('科学谱转ABC谱错误:', err)
     return ''
   }
 })
 
-// 计算属性：处理ABC谱输入
+// 计算属性：处理ABC谱输入（用于渲染和播放）
 const processedAbcInput = computed(() => {
   if (!abcInput.value || !abcInput.value.trim()) {
     return ''
   }
   try {
-    // 创建新的选项对象，使用当前选中的所有参数
-    const currentOptions = {
-      ...abcConversionOptions.value,
+    return abcToAbc(abcInput.value, {
+      key: 'C',
       meter: selectedMeter.value,
       tempo: selectedTempo.value,
       unitNoteLength: selectedUnitNoteLength.value,
       title: selectedTitle.value || 'ABC谱'
-    }
-    return abcToAbc(abcInput.value, currentOptions)
+    })
   } catch (err) {
     console.error('处理ABC谱错误:', err)
     return ''
   }
 })
 
-// 监听简谱输入，更新科学谱和ABC谱
-
-watch(() => jianpuInput.value, (newVal) => {
-
-  if (newVal && newVal.trim()) {
-
-    scientificInput.value = computedScientificFromJianpu.value
-
-    // 替换标题为 "ABC" 并提取音符部分
-    const abcFromJianpu = computedAbcFromJianpu.value
-    const abcWithCorrectTitle = abcFromJianpu.replace(/^T:.*$/m, 'T:ABC')
-    // 提取音符部分（去除头部）
-    const lines = abcWithCorrectTitle.split('\n')
-    const bodyStartIndex = lines.findIndex(line => line.match(/^K:/))
-    const abcBody = bodyStartIndex >= 0 ? lines.slice(bodyStartIndex + 1).join('\n').trim() : abcWithCorrectTitle
-    abcInput.value = abcBody
-
-  } else {
-
-    scientificInput.value = ''
-
-    abcInput.value = ''
-
+// 监听参数变化，触发对应输入框的重新转换和渲染
+watch([selectedBaseNote, selectedMeter, selectedTempo, selectedUnitNoteLength, selectedTitle], async () => {
+  // 更新简谱处理器的 tempo
+  if (jianpuHandler.value) {
+    jianpuHandler.value.setTempo(parseInt(selectedTempo.value))
+  }
+  // 更新科学谱处理器的 tempo
+  if (scientificHandler.value) {
+    scientificHandler.value.setTempo(parseInt(selectedTempo.value))
+  }
+  // 更新 ABC 谱处理器的 tempo
+  if (abcHandler.value) {
+    abcHandler.value.setTempo(parseInt(selectedTempo.value))
   }
 
-  // 触发渲染更新
+  // 触发所有渲染更新
   updateJianpuRendering()
-
-}, { immediate: true, flush: 'post' })
-
-
-
-// 监听科学谱输入，更新ABC谱
-
-watch(() => scientificInput.value, (newVal) => {
-
-  if (newVal && newVal.trim()) {
-
-    // 替换标题为 "ABC" 并提取音符部分
-    const abcFromScientific = computedAbcFromScientific.value
-    const abcWithCorrectTitle = abcFromScientific.replace(/^T:.*$/m, 'T:ABC')
-    // 提取音符部分（去除头部）
-    const lines = abcWithCorrectTitle.split('\n')
-    const bodyStartIndex = lines.findIndex(line => line.match(/^K:/))
-    const abcBody = bodyStartIndex >= 0 ? lines.slice(bodyStartIndex + 1).join('\n').trim() : abcWithCorrectTitle
-    abcInput.value = abcBody
-
-  } else {
-
-    abcInput.value = ''
-
-  }
-
-  // 触发渲染更新
   updateScientificRendering()
-
-}, { flush: 'post' })
-
-
-
-
-
-// 监听ABC谱输入，更新渲染
-
-watch(() => abcInput.value, () => {
-
   updateAbcRendering()
+})
 
-}, { immediate: true, flush: 'post' })
-
-
-
-// 监听简谱ABC谱，更新渲染
-
-watch(() => computedAbcFromJianpu, () => {
-
+// 监听简谱输入，更新渲染
+watch(() => jianpuInput.value, () => {
   updateJianpuRendering()
-
 }, { immediate: true, flush: 'post' })
 
-
-
-// 监听科学谱ABC谱，更新渲染
-
-watch(() => computedAbcFromScientific, () => {
-
+// 监听科学谱输入，更新渲染
+watch(() => scientificInput.value, () => {
   updateScientificRendering()
+}, { immediate: true, flush: 'post' })
 
+// 监听 ABC 谱输入，更新渲染
+watch(() => abcInput.value, () => {
+  updateAbcRendering()
 }, { immediate: true, flush: 'post' })
 
 // 更新简谱渲染
@@ -457,7 +272,7 @@ async function updateScientificRendering() {
   }
 }
 
-// 更新ABC谱渲染
+// 更新 ABC 谱渲染
 async function updateAbcRendering() {
   if (abcHandler.value && abcRenderContainer.value) {
     try {
@@ -512,7 +327,7 @@ function stopScientific() {
   }
 }
 
-// ABC谱播放功能
+// ABC 谱播放功能
 async function playAbc() {
   if (!processedAbcInput.value || !abcHandler.value) return
 
@@ -534,7 +349,6 @@ function stopAbc() {
 
 // 组件挂载时初始化
 onMounted(async () => {
-  // 等待 nextTick 确保 DOM 已更新
   await nextTick()
 
   // 初始化简谱处理器（播放+渲染）
@@ -547,8 +361,7 @@ onMounted(async () => {
       tempo: parseInt(selectedTempo.value),
       onPlay: () => { jianpuPlaying.value = true },
       onStop: () => { jianpuPlaying.value = false },
-      onNoteClick: (noteIndex, noteElement) => {
-        console.log('点击简谱音符:', noteIndex)
+      onNoteClick: (noteIndex) => {
         jianpuHandler.value?.playFromNote(noteIndex)
       },
       responsive: true
@@ -566,8 +379,7 @@ onMounted(async () => {
       tempo: parseInt(selectedTempo.value),
       onPlay: () => { scientificPlaying.value = true },
       onStop: () => { scientificPlaying.value = false },
-      onNoteClick: (noteIndex, noteElement) => {
-        console.log('点击科学谱音符:', noteIndex)
+      onNoteClick: (noteIndex) => {
         scientificHandler.value?.playFromNote(noteIndex)
       },
       responsive: true
@@ -585,47 +397,25 @@ onMounted(async () => {
       tempo: parseInt(selectedTempo.value),
       onPlay: () => { abcPlaying.value = true },
       onStop: () => { abcPlaying.value = false },
-      onNoteClick: (noteIndex, noteElement) => {
-        console.log('点击ABC谱音符:', noteIndex)
+      onNoteClick: (noteIndex) => {
         abcHandler.value?.playFromNote(noteIndex)
       },
       responsive: true
     })
     await abcHandler.value.render()
   }
-
-  // 等待初始化完成
-  await new Promise(resolve => setTimeout(resolve, 100))
-
-  // 手动触发初始值的转换（如果有默认值）
-  if (jianpuInput.value && jianpuInput.value.trim()) {
-    scientificInput.value = computedScientificFromJianpu.value
-    // 替换标题为 "ABC" 并提取音符部分
-    const abcFromJianpu = computedAbcFromJianpu.value
-    const abcWithCorrectTitle = abcFromJianpu.replace(/^T:.*$/m, 'T:ABC')
-    // 提取音符部分（去除头部）
-    const lines = abcWithCorrectTitle.split('\n')
-    const bodyStartIndex = lines.findIndex(line => line.match(/^K:/))
-    const abcBody = bodyStartIndex >= 0 ? lines.slice(bodyStartIndex + 1).join('\n').trim() : abcWithCorrectTitle
-    abcInput.value = abcBody
-  }
 })
 
 // 组件卸载时清理资源
 onBeforeUnmount(() => {
-  // 清理简谱处理器
   if (jianpuHandler.value) {
     jianpuHandler.value.dispose()
     jianpuHandler.value = null
   }
-
-  // 清理科学谱处理器
   if (scientificHandler.value) {
     scientificHandler.value.dispose()
     scientificHandler.value = null
   }
-
-  // 清理 ABC 谱处理器
   if (abcHandler.value) {
     abcHandler.value.dispose()
     abcHandler.value = null
@@ -765,18 +555,17 @@ onBeforeUnmount(() => {
             >
               ▶ 播放
             </button>
-            <button
-              class="btn btn-stop"
-              @click="stopJianpu"
-              :disabled="!jianpuPlaying"
-            >
-              ⏹ 停止
-            </button>
           </div>
         </div>
         <div class="abc-string-row">
           <div class="abc-string-container">
-            <h4>转换后的 ABC 字符串：</h4>
+            <h4>科学谱：</h4>
+            <pre class="abc-string">{{ computedScientificFromJianpu || '（无内容）' }}</pre>
+          </div>
+        </div>
+        <div class="abc-string-row">
+          <div class="abc-string-container">
+            <h4>ABC 谱（用于渲染和播放）：</h4>
             <pre class="abc-string">{{ computedAbcFromJianpu || '（无内容）' }}</pre>
           </div>
         </div>
@@ -802,18 +591,11 @@ onBeforeUnmount(() => {
             >
               ▶ 播放
             </button>
-            <button
-              class="btn btn-stop"
-              @click="stopScientific"
-              :disabled="!scientificPlaying"
-            >
-              ⏹ 停止
-            </button>
           </div>
         </div>
         <div class="abc-string-row">
           <div class="abc-string-container">
-            <h4>转换后的 ABC 字符串：</h4>
+            <h4>ABC 谱（用于渲染和播放）：</h4>
             <pre class="abc-string">{{ computedAbcFromScientific || '（无内容）' }}</pre>
           </div>
         </div>
@@ -822,13 +604,13 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- ABC谱部分 -->
+      <!-- ABC 谱部分 -->
       <div class="note-column" v-show="selectedTab === 'abc'">
         <div class="input-row">
           <textarea
             v-model="abcInput"
             class="note-input"
-            placeholder="输入ABC谱..."
+            placeholder="输入 ABC 谱..."
             rows="4"
           />
           <div class="button-group">
@@ -839,18 +621,11 @@ onBeforeUnmount(() => {
             >
               ▶ 播放
             </button>
-            <button
-              class="btn btn-stop"
-              @click="stopAbc"
-              :disabled="!abcPlaying"
-            >
-              ⏹ 停止
-            </button>
           </div>
         </div>
         <div class="abc-string-row">
           <div class="abc-string-container">
-            <h4>处理后的 ABC 字符串：</h4>
+            <h4>处理后的 ABC 谱（用于渲染和播放）：</h4>
             <pre class="abc-string">{{ processedAbcInput || '（无内容）' }}</pre>
           </div>
         </div>
@@ -923,48 +698,6 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0 3px rgba(var(--va-c-primary-rgb), 0.1);
 }
 
-.base-note-selector {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: var(--va-c-bg-soft);
-  border-radius: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.base-note-selector label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--va-c-text);
-  white-space: nowrap;
-}
-
-.base-note-select {
-  flex: 1;
-  max-width: 300px;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--va-c-divider);
-  border-radius: 0.375rem;
-  background: var(--va-c-bg);
-  color: var(--va-c-text);
-  font-size: 0.875rem;
-  font-family: 'Courier New', monospace;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.base-note-select:hover {
-  border-color: var(--va-c-primary);
-}
-
-.base-note-select:focus {
-  outline: none;
-  border-color: var(--va-c-primary);
-  box-shadow: 0 0 0 3px rgba(var(--va-c-primary-rgb), 0.1);
-}
-
-/* 标签切换栏样式 */
 .tab-bar {
   display: flex;
   gap: 0.5rem;
@@ -1011,7 +744,6 @@ onBeforeUnmount(() => {
 
 .note-section {
   display: block;
-  gap: 1.5rem;
 }
 
 .note-column {
@@ -1022,18 +754,6 @@ onBeforeUnmount(() => {
   border-radius: 0.5rem;
   padding: 1rem;
   background: var(--va-c-bg);
-}
-
-.column-header {
-  text-align: center;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--va-c-primary);
-}
-
-.column-header h3 {
-  margin: 0;
-  color: var(--va-c-text);
-  font-size: 1.25rem;
 }
 
 .input-row {
@@ -1098,11 +818,6 @@ onBeforeUnmount(() => {
 }
 
 
-.btn-stop:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(var(--va-c-error-rgb), 0.3);
-}
-
 .abc-string-row {
   display: flex;
   flex-direction: column;
@@ -1142,7 +857,7 @@ onBeforeUnmount(() => {
 }
 
 .render-container {
-  position:  relative !important;
+  position: relative !important;
   width: 100%;
   min-width: 0;
   min-height: 120px;
@@ -1158,18 +873,7 @@ onBeforeUnmount(() => {
   height: auto;
 }
 
-/* 响应式设计 */
-@media (max-width: 1024px) {
-  .note-section {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (max-width: 768px) {
-  .note-section {
-    grid-template-columns: 1fr;
-  }
-
   .button-group {
     flex-wrap: wrap;
   }

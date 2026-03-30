@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface Props {
   targetUrl?: string
@@ -9,6 +10,7 @@ const props = withDefaults(defineProps<Props>(), {
   targetUrl: '/'
 })
 
+const router = useRouter()
 const loadingStatus = ref('加载中...')
 
 onMounted(() => {
@@ -22,15 +24,13 @@ onMounted(() => {
 
   // 阶段 2: 资源加载完成
   const handleLoad = () => {
-    loadingStatus.value = '加载资源中...'
     // 模拟一些异步操作
     setTimeout(() => {
-      loadingStatus.value = '准备跳转...'
+      loadingStatus.value = '发呆中...'
       setTimeout(() => {
-        loadingStatus.value = '完成'
         setTimeout(() => {
-          // 跳转
-          window.location.href = props.targetUrl
+          // 使用 Vue Router 跳转
+          router.push(props.targetUrl)
           window.document.title = originalTitle
         }, 300)
       }, 200)
@@ -55,7 +55,8 @@ onMounted(() => {
   setTimeout(() => {
     loadingStatus.value = '超时跳转...'
     setTimeout(() => {
-      window.location.href = props.targetUrl
+      // 使用 Vue Router 跳转
+      router.push(props.targetUrl)
       window.document.title = originalTitle
     }, 300)
   }, 5000) // 5秒超时
@@ -102,6 +103,7 @@ onMounted(() => {
   text-align: center;
   color: #333;
   padding: 40px;
+  user-select: none; /* 禁止所有文字选中 */
 }
 
 .quote {
@@ -111,11 +113,17 @@ onMounted(() => {
   margin-bottom: 40px;
   line-height: 1.8;
   letter-spacing: 0.5px;
+  user-select: none; /* 禁止文字选中 */
 }
 
 .word {
   display: inline-block;
   animation: bounce 0.6s ease-in-out infinite;
+  margin-right: 8px; /* 单词之间的微小间隔 */
+}
+
+.word:last-child {
+  margin-right: 0; /* 最后一个单词不需要右边距 */
 }
 
 .word:nth-child(1) { animation-delay: 0s; }
@@ -149,6 +157,7 @@ onMounted(() => {
   font-weight: 500;
   margin: 0;
   color: #666;
+  user-select: none; /* 禁止文字选中 */
 }
 </style>
 

@@ -3,6 +3,13 @@
  * 基于 ABC 标准 v2.1
  */
 
+import {
+  parseAbcHeader,
+  extractAbcBody,
+  headerToString,
+  type AbcHeader
+} from './abcToAbc';
+
 export interface JianpuToScientificOptions {
   /** 基音，默认 C4 */
   baseNote?: string;
@@ -28,9 +35,9 @@ interface ParsedNote {
 
 /**
  * 简谱到科学谱转换函数
- * @param jianpu 简谱字符串
+ * @param jianpu 简谱字符串（可能包含 ABC header）
  * @param options 转换选项
- * @returns 科学谱字符串
+ * @returns 科学谱字符串（如果输入有 ABC header，header 会原样保留）
  */
 export function jianpuToScientific(
   jianpu: string,
@@ -40,13 +47,29 @@ export function jianpuToScientific(
     baseNote = 'C4'
   } = options;
 
+  // 清理输入
+  const cleanedInput = jianpu.trim();
+  if (!cleanedInput) {
+    return '';
+  }
+
+  // 解析输入中的 ABC header（如果有）
+  const userHeader = parseAbcHeader(cleanedInput);
+  const userBody = extractAbcBody(cleanedInput);
+
+  // 如果没有 ABC header，则使用整个输入作为音符主体
+  const notesBody = userBody || cleanedInput;
+
+  // 从 userHeader 中提取 BN 字段作为 baseNote（优先级高于 options 中的 baseNote）
+  const actualBaseNote = userHeader.BN || baseNote;
+
   // 解析简谱
-  const notes = parseJianpu(jianpu);
+  const notes = parseJianpu(notesBody);
 
   // 转换为科学谱
-  const scientificNotes = notes.map(note => convertNoteToScientific(note, baseNote));
+  const scientificNotes = notes.map(note => convertNoteToScientific(note, actualBaseNote));
 
-  // 构建最终字符串，保留换行符
+  // 构建最终的音符字符串，保留换行符
   let result = '';
   let needSpace = false; // 标记是否需要在下一个音符前添加空格
 
@@ -67,6 +90,14 @@ export function jianpuToScientific(
     }
   }
 
+
+  // 如果有 ABC header，将 header 和 body 合并输出
+  if (Object.keys(userHeader).length > 0) {
+    const headerString = headerToString(userHeader);
+    return `${headerString}\n${result}`;
+  }
+
+  // 没有 header，只返回转换后的音符
   return result;
 }
 
@@ -159,20 +190,20 @@ function tokenizeJianpu(input: string): string[] {
         if (parenEnd < cleaned.length) {
           // 提取括号内的内容
           const parenContent = cleaned.substring(i + 1, parenEnd).trim();
-          
+
           // 添加左括号
           tokens.push('(');
-          
+
           // 如果括号内不为空，分解括号内的内容
           if (parenContent) {
             // 对括号内的内容进行递归处理
             const innerTokens = tokenizeJianpu(parenContent);
             tokens.push(...innerTokens);
           }
-          
+
           // 添加右括号
           tokens.push(')');
-          
+
           i = parenEnd;
           continue;
         }
@@ -379,9 +410,14 @@ function parseDurationModifiers(modifiers: string): string[] {
 }
 
 /**
- * 音名数组（按半音排列）
+ * 音名数组（按半音排列，升号）
  */
 const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+/**
+ * 音名数组（按半音排列，降号）
+ */
+const noteNamesFlat = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 
 /**
  * 大调音阶偏移（相对于基音）
@@ -456,7 +492,15 @@ function convertNoteToScientific(note: ParsedNote, baseNote: string): string {
   let targetSemitone = (baseSemitone + scaleOffset + accidentalOffset) % 12;
   if (targetSemitone < 0) targetSemitone += 12;
 
-  let finalNoteName = noteNames[targetSemitone];
+  // 根据升降号选择正确的音名映射表
+  let finalNoteName: string;
+  if (note.accidental === 'b') {
+    // 使用降号映射表
+    finalNoteName = noteNamesFlat[targetSemitone];
+  } else {
+    // 使用升号映射表（默认）
+    finalNoteName = noteNames[targetSemitone];
+  }
 
   // 计算八度
   let octave = baseOctave + note.octaveModifier;

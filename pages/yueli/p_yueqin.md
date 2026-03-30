@@ -1,6 +1,7 @@
-----
-title: 月琴
-----
+---
+title: '月琴'
+---
 
-<YueLiNotesPlayground/>
+
+<Yueqin/>
 

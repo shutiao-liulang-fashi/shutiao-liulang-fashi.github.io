@@ -8,25 +8,8 @@ const sidebar =  [
   },
   {
     text: '乐理',
+    link: '/yueli/',
     collapsed: false,
-    items: [
-      {
-        text: '介绍',
-        link: '/yueli/',
-      },
-      {
-        text: 'ABC 乐谱',
-        link: '/yueli/ABCNotation/',
-      },
-       {
-        text: '游乐场',
-        link: '/yueli/playground/',
-      },
-      {
-        text: '月琴',
-        link: '/yueli/p_yueqin/',
-      }
-    ],
   },
 ]
 
@@ -42,7 +25,7 @@ export default defineValaxyConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/sutiao-liulang-fashi/sutiao-liulang-fashi.github.io/edit/main/docs/:path',
+      pattern: 'https://github.com/sutiao-liulang-fashi/sutiao-liulang-fashi.github.io/edit/main/:path',
     },
   },
   unocss: {},

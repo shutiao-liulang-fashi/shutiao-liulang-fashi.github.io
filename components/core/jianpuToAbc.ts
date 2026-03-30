@@ -3,6 +3,15 @@
  * 基于 ABC 标准 v2.1
  */
 
+import {
+  parseAbcHeader,
+  extractAbcBody,
+  generateHeader,
+  mergeHeaders,
+  headerToString,
+  type AbcHeader
+} from './abcToAbc';
+
 export interface ConversionOptions {
   /** 调性，默认 C */
   key?: string;
@@ -42,7 +51,7 @@ export interface ParsedJianpuNote {
 
 /**
  * 简谱到 ABC 记谱法转换函数
- * @param jianpuNotes 简谱音符字符串
+ * @param jianpuNotes 简谱音符字符串（可能包含 ABC header）
  * @param options 转换选项
  * @returns ABC 记谱法字符串
  */
@@ -59,10 +68,26 @@ export function jianpuToAbc(
     baseNote = 'C4'
   } = options;
 
+  // 清理输入
+  const cleanedInput = jianpuNotes.trim();
+  if (!cleanedInput) {
+    return '';
+  }
+
+  // 解析输入中的 ABC header（如果有）
+  const userHeader = parseAbcHeader(cleanedInput);
+  const userBody = extractAbcBody(cleanedInput);
+
+  // 如果没有 ABC header，则使用整个输入作为音符主体
+  const notesBody = userBody || cleanedInput;
+
+  // 从 userHeader 中提取 BN 字段作为 baseNote（优先级高于 options 中的 baseNote）
+  const actualBaseNote = userHeader.BN || baseNote;
+
   // 解析并转换音符
-  const notes = parseJianpuNotes(jianpuNotes);
+  const notes = parseJianpuNotes(notesBody);
   // 转换音符并保留换行符
-  const convertedNotes = notes.map(note => convertJianpuNoteToAbc(note, baseNote));
+  const convertedNotes = notes.map(note => convertJianpuNoteToAbc(note, actualBaseNote));
   // 构建最终的 ABC 字符串，保留换行符
   let abcNotes = '';
   let needSpace = false; // 标记是否需要在下一个音符前添加空格
@@ -85,8 +110,8 @@ export function jianpuToAbc(
     // 空字符串跳过
   }
 
-  // 生成 ABC 头部
-  const header = generateHeader({
+  // 生成默认 ABC 头部
+  const defaultHeader = generateHeader({
     title,
     meter,
     tempo,
@@ -94,7 +119,13 @@ export function jianpuToAbc(
     key
   });
 
-  return `${header}\n${abcNotes}`;
+  // 合并头部（用户传入的优先）
+  const mergedHeader = mergeHeaders(userHeader, defaultHeader);
+
+  // 将头部对象转换为 ABC 字符串
+  const headerString = headerToString(mergedHeader);
+
+  return `${headerString}\n${abcNotes}`;
 }
 
 /**
@@ -361,19 +392,22 @@ const digitToNoteName: Record<string, string> = {
 };
 
 /**
- * 将升号转换为降号
- * 例如：^C -> _B, ^D -> _E, ^F -> _G, ^G -> _A, ^A -> _B
+ * 半音偏移到ABC降号音名的映射
  */
-function convertSharpToFlat(noteName: string): string {
-  const sharpToFlat: Record<string, string> = {
-    '^C': '_B',
-    '^D': '_E',
-    '^F': '_G',
-    '^G': '_A',
-    '^A': '_B'
-  };
-  return sharpToFlat[noteName] || noteName;
-}
+const semitoneOffsetToFlatNoteName: Record<number, string> = {
+  0: 'C',
+  1: '_D',  // C# = Db
+  2: 'D',
+  3: '_E',  // D# = Eb
+  4: 'E',
+  5: 'F',
+  6: '_G',  // F# = Gb
+  7: 'G',
+  8: '_A',  // G# = Ab
+  9: 'A',
+  10: '_B', // A# = Bb
+  11: 'B'
+};
 
 /**
  * 音名到音级的映射（1-7）
@@ -538,12 +572,14 @@ function convertJianpuNoteToAbc(note: ParsedJianpuNote, baseNote: string): strin
   let targetSemitone = (baseSemitone + scaleOffset + accidentalOffset) % 12;
   if (targetSemitone < 0) targetSemitone += 12;
 
-  // 获取ABC音名（已包含升降号）
-  let abcNoteName = semitoneOffsetToNoteName[targetSemitone];
-
-  // 如果简谱有降号，需要将升号转换为降号
+  // 获取ABC音名（根据升降号选择不同的映射表）
+  let abcNoteName: string;
   if (note.accidental === 'b') {
-    abcNoteName = convertSharpToFlat(abcNoteName);
+    // 使用降号映射表
+    abcNoteName = semitoneOffsetToFlatNoteName[targetSemitone];
+  } else {
+    // 使用升号映射表（默认）
+    abcNoteName = semitoneOffsetToNoteName[targetSemitone];
   }
 
   // 计算八度
@@ -597,19 +633,6 @@ function convertOctave(noteName: string, octave: number): string {
     const apostrophes = octave - 5;
     return `${accidental}${baseNote.toLowerCase()}${'\''.repeat(apostrophes)}`;
   }
-}
-
-/**
- * 生成 ABC 头部信息
- */
-function generateHeader(options: {
-  title: string;
-  meter: string;
-  tempo: string;
-  unitNoteLength: string;
-  key: string;
-}): string {
-  return `X:1\nT:${options.title}\nM:${options.meter}\nL:${options.unitNoteLength}\nQ:${options.tempo}\nK:${options.key}`;
 }
 
 /**

@@ -3,6 +3,14 @@
  * 基于 ABC 标准 v2.1
  */
 
+import {
+  parseAbcHeader,
+  extractAbcBody,
+  generateHeader,
+  mergeHeaders,
+  headerToString
+} from './abcToAbc';
+
 export interface ConversionOptions {
   /** 调性，默认 C */
   key?: string;
@@ -39,7 +47,7 @@ export interface ParsedNote {
 
 /**
  * 科学记谱法到 ABC 记谱法转换函数
- * @param scientificNotes 科学记谱法音符字符串（空格分隔）
+ * @param scientificNotes 科学记谱法音符字符串（空格分隔，可能包含 ABC header）
  * @param options 转换选项
  * @returns ABC 记谱法字符串
  */
@@ -55,8 +63,21 @@ export function scientificToAbc(
     title = 'Scientific Notation'
   } = options;
 
+  // 清理输入
+  const cleanedInput = scientificNotes.trim();
+  if (!cleanedInput) {
+    return '';
+  }
+
+  // 解析输入中的 ABC header（如果有）
+  const userHeader = parseAbcHeader(cleanedInput);
+  const userBody = extractAbcBody(cleanedInput);
+
+  // 如果没有 ABC header，则使用整个输入作为音符主体
+  const notesBody = userBody || cleanedInput;
+
   // 解析并转换音符
-  const notes = parseNotes(scientificNotes);
+  const notes = parseNotes(notesBody);
   // 构建最终的 ABC 字符串，保留换行符
   let abcNotes = '';
   let needSpace = false; // 标记是否需要在下一个音符前添加空格
@@ -78,8 +99,8 @@ export function scientificToAbc(
     }
   }
 
-  // 生成 ABC 头部
-  const header = generateHeader({
+  // 生成默认 ABC 头部
+  const defaultHeader = generateHeader({
     title,
     meter,
     tempo,
@@ -87,7 +108,13 @@ export function scientificToAbc(
     key
   });
 
-  return `${header}\n${abcNotes}`;
+  // 合并头部（用户传入的优先）
+  const mergedHeader = mergeHeaders(userHeader, defaultHeader);
+
+  // 将头部对象转换为 ABC 字符串
+  const headerString = headerToString(mergedHeader);
+
+  return `${headerString}\n${abcNotes}`;
 }
 
 /**
@@ -400,24 +427,6 @@ function convertOctave(noteName: string, octave: number): string {
     const apostrophes = octave - 5;
     return `${noteName.toLowerCase()}${'\''.repeat(apostrophes)}`;
   }
-}
-
-/**
- * 生成 ABC 头部信息
- */
-function generateHeader(options: {
-  title: string;
-  meter: string;
-  tempo: string;
-  unitNoteLength: string;
-  key: string;
-}): string {
-  return `X:1
-T:${options.title}
-M:${options.meter}
-L:${options.unitNoteLength}
-Q:${options.tempo}
-K:${options.key}`;
 }
 
 /**

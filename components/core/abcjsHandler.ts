@@ -39,12 +39,13 @@ export interface AbcHandlerOptions {
   enableRender?: boolean
 
   /** 渲染容器（如果 enableRender 为 true，则必须传入） */
-  container?: HTMLElement
+  container?: HTMLElement | undefined | null
 
   /** 播放相关选项 */
   volume?: number
   tempo?: number
   cursorControl?: CursorControl
+
 
   /** 渲染相关选项 */
   renderOptions?: ABCJS.RenderOptions
@@ -53,9 +54,6 @@ export interface AbcHandlerOptions {
   /** 播放回调 */
   onPlay?: () => void
   onStop?: () => void
-
-  /** 音符点击回调（点击渲染页面上的音符时触发） */
-  onNoteClick?: (noteIndex: number, noteElement: HTMLElement) => void
 
   /** 是否启用响应式重渲染，默认为 false */
   responsive?: boolean
@@ -95,9 +93,6 @@ export interface AbcHandlerOptions {
  *   enablePlayback: true,
  *   enableRender: true,
  *   container: document.getElementById('sheet-music'),
- *   onNoteClick: (noteIndex, noteElement) => {
- *     handler.playFromNote(noteIndex)
- *   }
  * })
  * await handler.render()
  * await handler.play()
@@ -113,7 +108,6 @@ export class AbcHandler {
   private tempo: number = 120
   private onPlayCallback?: () => void
   private onStopCallback?: () => void
-  private onNoteClickCallback?: (noteIndex: number, noteElement: HTMLElement) => void
   private cursorControlOptions?: CursorControl
 
   // 渲染相关
@@ -146,7 +140,6 @@ export class AbcHandler {
       showTitle,
       onPlay,
       onStop,
-      onNoteClick,
       responsive = false
     } = options
 
@@ -164,7 +157,6 @@ export class AbcHandler {
     this.showTitle = showTitle !== undefined ? showTitle : this.hasTitleInAbc(abcString)
     this.onPlayCallback = onPlay
     this.onStopCallback = onStop
-    this.onNoteClickCallback = onNoteClick
 
     // 如果启用渲染，必须有容器
     if (enableRender && !container) {
@@ -255,35 +247,7 @@ export class AbcHandler {
     return filteredLines.join('\n')
   }
 
-  /**
-   * 收集音符元素（用于点击播放）
-   */
-  private collectNoteElements(): void {
-    if (!this.container) return
 
-    this.noteElements = []
-    const notes = this.container.querySelectorAll('.abcjs-note, .abcjs-rest')
-    notes.forEach((note, index) => {
-      if (note instanceof HTMLElement) {
-        this.noteElements.push(note)
-      }
-    })
-  }
-
-  /**
-   * 设置音符点击事件
-   */
-  private setupNoteClickEvents(): void {
-    if (!this.container || !this.onNoteClickCallback) return
-
-    this.noteElements.forEach((noteElement, index) => {
-      noteElement.style.cursor = 'pointer'
-      noteElement.addEventListener('click', (e) => {
-        e.stopPropagation()
-        this.onNoteClickCallback?.(index, noteElement)
-      })
-    })
-  }
 
   /**
    * 渲染 ABC 到容器
@@ -326,12 +290,6 @@ export class AbcHandler {
         throw new Error('渲染 ABC 失败')
       }
 
-      // 收集音符元素
-      this.collectNoteElements()
-
-      // 设置音符点击事件
-      this.setupNoteClickEvents()
-
       // 如果同时启用了播放，初始化播放器
       if (this.enablePlayback) {
         await this.initPlayback()
@@ -358,6 +316,7 @@ export class AbcHandler {
 
       // 创建合成器控制器
       this.synthController = new ABCJS.synth.SynthController()
+
 
       // 创建游标控制器
       const finalCursorControl: CursorControl = {
@@ -689,7 +648,6 @@ export class AbcHandler {
     this.noteElements = []
     this.onPlayCallback = undefined
     this.onStopCallback = undefined
-    this.onNoteClickCallback = undefined
     this.cursorControlOptions = undefined
   }
 }

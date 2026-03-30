@@ -407,6 +407,11 @@ function isCurrentPosition(stringIndex: number, fret: number): boolean {
   return currentPosition.value.stringIndex === stringIndex && currentPosition.value.fret === fret
 }
 
+// 高亮显示特定位置
+function highlightPosition(stringIndex: number, fret: number) {
+  currentPosition.value = { stringIndex, fret }
+}
+
 // 处理 ABC 输入变化
 
 function handleAbcInput() {
@@ -460,100 +465,6 @@ async function play() {
       unitNoteLength: options.value.unitNoteLength
 
     })
-
-
-
-    // 创建自定义游标控制器
-
-    const cursorControl: any = {
-
-      onBeat: (beatNumber: number, totalBeats: number, totalTime: number) => {
-
-        // 不需要处理
-
-      },
-
-      onEvent: (event: any) => {
-
-        // 处理音符事件
-
-        if (event && event.midiPitches && event.midiPitches.length > 0) {
-
-          const midiPitchObj = event.midiPitches[0]
-
-          const midiPitch = midiPitchObj.pitch
-
-          const noteName = midiPitchToNoteName(midiPitch)
-
-
-
-          if (noteName) {
-
-            // 查找月琴上的位置
-
-            const positions = findPositions(noteName)
-
-            const position = positions.length > 0 ? positions[0] : null
-
-
-
-            // 先清除当前显示
-
-            currentNote.value = null
-
-            currentPosition.value = null
-
-
-
-            // 清除之前的定时器
-
-            if (blinkTimeout !== null) {
-
-              clearTimeout(blinkTimeout)
-
-            }
-
-
-
-            // 延迟一小段时间后显示新音符，产生闪烁效果
-
-            blinkTimeout = window.setTimeout(() => {
-
-              currentNote.value = noteName
-
-              currentPosition.value = position
-
-            }, 80) // 80ms 的闪烁间隔
-
-          }
-
-        }
-
-      },
-
-      onFinished: () => {
-
-        // 清除定时器
-
-        if (blinkTimeout !== null) {
-
-          clearTimeout(blinkTimeout)
-
-          blinkTimeout = null
-
-        }
-
-        isPlaying.value = false
-
-        currentNote.value = null
-
-        currentPosition.value = null
-
-      }
-
-    }
-
-
 
     // 更新处理器的 ABC 字符串
     await mainHandler.value!.updateAbcString(processedAbc)
@@ -668,28 +579,7 @@ async function playSingleNote(stringIndex: number, fret: number) {
         enablePlayback: true,
         enableRender: false,
         tempo: parseInt(options.value.tempo, 10),
-        onEvent: (event: any) => {
-          // 处理音符事件
-          if (event && event.midiPitches && event.midiPitches.length > 0) {
-            const midiPitchObj = event.midiPitches[0]
-            const note = midiPitchToNoteName(midiPitchObj.pitch)
-            if (note) {
-              currentNote.value = note
-              const positions = findPositions(note)
-              if (positions.length > 0) {
-                currentPosition.value = positions[0]
-                highlightPosition(positions[0].stringIndex, positions[0].fret)
-              }
-            }
-          }
-        },
-        onFinished: () => {
-          // 播放完成后清除显示
-          setTimeout(() => {
-            currentNote.value = null
-            currentPosition.value = null
-          }, 500)
-        }
+        cursorControl: cursorControl,
       })
     } else {
       // 更新 ABC 字符串
@@ -725,9 +615,102 @@ function midiPitchToNoteName(pitch: number): Note | null {
 
 // 组件挂载时初始化
 onMounted(() => {
+
+      // 创建自定义游标控制器
+
+    const cursorControl: any = {
+
+      onBeat: (beatNumber: number, totalBeats: number, totalTime: number) => {
+
+        // 不需要处理
+
+      },
+
+      onEvent: (event: any) => {
+
+              // 处理音符事件
+
+              if (event && event.midiPitches && event.midiPitches.length > 0) {
+
+                const midiPitchObj = event.midiPitches[0]
+
+                const midiPitch = midiPitchObj.pitch
+
+                const noteName = midiPitchToNoteName(midiPitch)
+
+
+
+                if (noteName) {
+
+                  // 查找月琴上的位置
+
+                  const positions = findPositions(noteName)
+
+                  const position = positions.length > 0 ? positions[0] : null
+
+
+
+                  // 清除之前的定时器
+
+                  if (blinkTimeout !== null) {
+
+                    clearTimeout(blinkTimeout)
+
+                  }
+
+
+
+                  // 先清除当前显示
+
+                  currentNote.value = null
+
+                  currentPosition.value = null
+
+
+
+                  // 延迟一小段时间后显示新音符，产生闪烁效果
+
+                  // 即使是同一个音符，也会有短暂的空白期，产生跳动效果
+
+                  blinkTimeout = window.setTimeout(() => {
+
+                    currentNote.value = noteName
+
+                    currentPosition.value = position
+
+                  }, 60) // 60ms 的闪烁间隔，确保每次都有跳动效果
+
+                }
+
+              }
+
+            },
+
+      onFinished: () => {
+
+        // 清除定时器
+
+        if (blinkTimeout !== null) {
+
+          clearTimeout(blinkTimeout)
+
+          blinkTimeout = null
+
+        }
+
+        isPlaying.value = false
+
+        currentNote.value = null
+
+        currentPosition.value = null
+
+      }
+
+    }
+
   // 创建主处理器实例
   mainHandler.value = new AbcHandler({
-    abcString: '',
+    abcString: abcInput.value,
     enablePlayback: true,
     enableRender: false,
     tempo: parseInt(options.value.tempo, 10),
@@ -739,23 +722,7 @@ onMounted(() => {
       currentNote.value = null
       currentPosition.value = null
     },
-    cursorControl: {
-      onEvent: (event: any) => {
-        // 处理音符事件
-        if (event && event.midiPitches && event.midiPitches.length > 0) {
-          const midiPitchObj = event.midiPitches[0]
-          const note = midiPitchToNoteName(midiPitchObj.pitch)
-          if (note) {
-            currentNote.value = note
-            const positions = findPositions(note)
-            if (positions.length > 0) {
-              currentPosition.value = positions[0]
-              highlightPosition(positions[0].stringIndex, positions[0].fret)
-            }
-          }
-        }
-      }
-    }
+    cursorControl: cursorControl,
   })
 })
 

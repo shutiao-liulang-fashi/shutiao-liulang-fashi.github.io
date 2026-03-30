@@ -18,8 +18,9 @@ export interface AbcConversionOptions {
 
 /**
  * ABC 头部信息
+ * @export
  */
-interface AbcHeader {
+export interface AbcHeader {
   /** 参考编号 */
   X?: string;
   /** 标题 */
@@ -44,18 +45,21 @@ interface AbcHeader {
   Z?: string;
   /** 注释 */
   N?: string;
+  /** 基音（仅用于简谱转换） */
+  BN?: string;
 }
 
 /**
  * 解析 ABC 头部信息
+ * @export
  */
-function parseAbcHeader(abcString: string): AbcHeader {
+export function parseAbcHeader(abcString: string): AbcHeader {
   const header: AbcHeader = {};
   const lines = abcString.split('\n');
 
   for (const line of lines) {
-    // 匹配字段：字母后跟冒号
-    const match = line.match(/^([A-Za-z]):(.*)$/);
+    // 匹配字段：1-2个字母后跟冒号（支持标准单字母字段和自定义双字母字段如 BN）
+    const match = line.match(/^([A-Za-z]{1,2}):(.*)$/);
     if (match) {
       const [, field, value] = match;
       header[field as keyof AbcHeader] = value.trim();
@@ -72,23 +76,32 @@ function parseAbcHeader(abcString: string): AbcHeader {
 
 /**
  * 提取 ABC 主体部分（去除头部）
+ * @export
  */
-function extractAbcBody(abcString: string): string {
+export function extractAbcBody(abcString: string): string {
   const lines = abcString.split('\n');
   let bodyStartIndex = -1;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    // 检查是否是 K: 字段（最后一个头部字段）
+
+    // 检查是否是 K: 字段（最后一个标准头部字段）
     if (line.match(/^K:/)) {
       bodyStartIndex = i + 1;
+      break;
+    }
+
+    // 检查是否是 header 行（1-2个字母后跟冒号）
+    if (!line.match(/^[A-Za-z]{1,2}:/)) {
+      // 遇到非 header 行，说明头部结束，从这里开始是 body
+      bodyStartIndex = i;
       break;
     }
   }
 
   if (bodyStartIndex === -1) {
-    // 没有找到 K: 字段，返回整个字符串
-    return abcString;
+    // 没有找到 body，返回空字符串
+    return '';
   }
 
   return lines.slice(bodyStartIndex).join('\n');
@@ -96,8 +109,9 @@ function extractAbcBody(abcString: string): string {
 
 /**
  * 生成 ABC 头部信息
+ * @export
  */
-function generateHeader(options: AbcConversionOptions): AbcHeader {
+export function generateHeader(options: AbcConversionOptions): AbcHeader {
   const header: AbcHeader = {};
 
   // 默认 X:1，不需要作为参数传入
@@ -114,8 +128,9 @@ function generateHeader(options: AbcConversionOptions): AbcHeader {
 
 /**
  * 合并头部信息（用户传入的优先）
+ * @export
  */
-function mergeHeaders(
+export function mergeHeaders(
   userHeader: AbcHeader,
   defaultHeader: AbcHeader
 ): AbcHeader {
@@ -124,6 +139,10 @@ function mergeHeaders(
   // 用户传入的头部信息优先级更高
   for (const key in userHeader) {
     if (userHeader[key as keyof AbcHeader]) {
+      if (key === 'X' || key === 'BN') {
+        // X、K 和 BN 字段必须保留默认值，忽略用户传入的值
+        continue;
+      }
       merged[key as keyof AbcHeader] = userHeader[key as keyof AbcHeader];
     }
   }
@@ -133,15 +152,17 @@ function mergeHeaders(
 
 /**
  * 将头部对象转换为 ABC 字符串
+ * @export
  */
-function headerToString(header: AbcHeader): string {
+export function headerToString(header: AbcHeader): string {
   const fields: string[] = [];
 
-  // 必须字段顺序：X, T, M, L, Q, K
-  const fieldOrder: (keyof AbcHeader)[] = ['X', 'T', 'C', 'O', 'A', 'M', 'L', 'Q', 'P', 'K', 'Z', 'N'];
+  // 必须字段顺序：X, T, C, O, A, M, L, Q, P, K, BN, Z, N
+  // BN 是简谱特有的字段，放在 K 之后
+  const fieldOrder: (keyof AbcHeader)[] = ['X', 'T', 'C', 'O', 'A', 'M', 'L', 'Q', 'P', 'K', 'BN', 'Z', 'N'];
 
   for (const field of fieldOrder) {
-    if (header[field]) {
+    if (header[field] && field != 'BN') {
       fields.push(`${field}:${header[field]}`);
     }
   }
