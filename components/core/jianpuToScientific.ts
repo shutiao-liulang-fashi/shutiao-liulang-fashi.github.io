@@ -319,10 +319,24 @@ function parseJianpuToken(token: string): ParsedNote {
       };
     }
 
-    // 尝试第三种格式：数字形式的时值修饰符，如 5'2 (表示高八度的 5，二分音符)
-    const match3 = token.match(/^([1-7])([#bn]?)([',]*)(\d+)([-_=.]*)$/);
+    // 尝试第三种格式：数字+分数形式的时值修饰符，如 23/4（2 后面跟着 3/4 的时值）
+    const match3 = token.match(/^([1-7])([#bn]?)([',]*)(\d+\/\d+)([-_=.]*)$/);
     if (match3) {
-      const [, digit, accidental, octave, durationNumber, otherModifiers] = match3;
+      const [, digit, accidental, octave, durationFraction, otherModifiers] = match3;
+      return {
+        digit: parseInt(digit, 10),
+        accidental: (accidental as '#' | 'b' | 'n') || '',
+        octaveModifier: calculateOctaveModifier(octave),
+        durationModifiers: [durationFraction, ...parseDurationModifiers(otherModifiers)],
+        isRest: false,
+        specialSymbol: undefined
+      };
+    }
+
+    // 尝试第四种格式：纯数字形式的时值修饰符，如 5'2 (表示高八度的 5，二分音符)
+    const match4 = token.match(/^([1-7])([#bn]?)([',]*)(\d+)([-_=.]*)$/);
+    if (match4) {
+      const [, digit, accidental, octave, durationNumber, otherModifiers] = match4;
       return {
         digit: parseInt(digit, 10),
         accidental: (accidental as '#' | 'b' | 'n') || '',
@@ -393,14 +407,31 @@ function parseDurationModifiers(modifiers: string): string[] {
       result.push('.');
       i++;
     } else if (char === '/') {
-      // 分数时值
+      // 检查前面是否有数字（例如 3/4 的情况）
       let fraction = '/';
       i++;
+
+      // 收集后面的数字
       while (i < modifiers.length && /\d/.test(modifiers[i])) {
         fraction += modifiers[i];
         i++;
       }
-      result.push(fraction);
+
+      // 如果结果中最后一个元素是纯数字，把它们合并成一个分数
+      if (result.length > 0 && /^\d+$/.test(result[result.length - 1])) {
+        const lastNumber = result.pop() || '';
+        result.push(lastNumber + fraction);
+      } else {
+        result.push(fraction);
+      }
+    } else if (/\d/.test(char)) {
+      // 纯数字（可能后面跟着 /）
+      let number = '';
+      while (i < modifiers.length && /\d/.test(modifiers[i])) {
+        number += modifiers[i];
+        i++;
+      }
+      result.push(number);
     } else {
       i++;
     }

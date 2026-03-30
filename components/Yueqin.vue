@@ -212,22 +212,7 @@ const tuning = ref({
 })
 
 // ABC 输入
-const abcInput = ref(`X:1
-T:ABC谱
-M:4/4
-L:1/4
-Q:120
-K:C
-A/2 c/2 |
-d d/2 c/2 d/2 e/4 d/4 c/2 d/2 |
-e/2 g/2 g/2 a/2 e e/2 g/2 |
-d d/2 c/2 d/2 c/2 c/2 d/2 |
-e2 z |
-A/2 c/2 |
-d d d/2 e/4 d/4 c/2 d/2 |
-e/2 g/2 g/2 a/2 e g/2 e/2 |
-d g/2 e/2 d/2 A/2 A/2 c/2 |
-c2 z |`)
+const abcInput = ref('')
 
 // 选项
 const options = ref({
@@ -407,10 +392,6 @@ function isCurrentPosition(stringIndex: number, fret: number): boolean {
   return currentPosition.value.stringIndex === stringIndex && currentPosition.value.fret === fret
 }
 
-// 高亮显示特定位置
-function highlightPosition(stringIndex: number, fret: number) {
-  currentPosition.value = { stringIndex, fret }
-}
 
 // 处理 ABC 输入变化
 

@@ -62,6 +62,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/test/jianpu_parse': RouteRecordInfo<
+      '/test/jianpu_parse',
+      '/test/jianpu_parse',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/yueli/': RouteRecordInfo<
       '/yueli/',
       '/yueli',
@@ -158,6 +165,12 @@ declare module 'vue-router/auto-routes' {
     'pages/start/index.md': {
       routes:
         | '/start/'
+      views:
+        | never
+    }
+    'pages/test/jianpu_parse.md': {
+      routes:
+        | '/test/jianpu_parse'
       views:
         | never
     }

@@ -790,9 +790,37 @@ const abcString = scientificToAbc('C4 D4 E4 F4', {
 
 ---
 
-**最后更新**: 2026-03-30
+**最后更新**: 2026-03-31
 
 ## 更新日志
+
+### 2026-03-31
+- 优化 YueLiNotes.vue 组件
+  - 添加播放/停止切换按钮，根据播放状态自动切换图标
+  - 按钮悬浮在音符信息或五线谱左上角（根据显示内容自动定位）
+  - 优化播放状态跟踪，实时更新按钮状态
+  - 添加 togglePlayback 函数实现一键切换播放/停止
+  - 优化按钮样式，播放时显示红色系，停止时为正常颜色
+- 优化 YueLiNotesPlayground.vue 组件
+  - 引入《夕颜》简谱数据作为默认示例
+  - 新增 jianpu_xiyan.ts 模块存储《夕颜》简谱
+  - 移除硬编码的示例简谱，改用外部数据源
+- 优化 Yueqin.vue 月琴组件
+  - 移除硬编码的 ABC 示例数据
+  - 清理未使用的 highlightPosition 函数
+- 优化 jianpuToScientific.ts 简谱转换工具
+  - 支持分数形式时值（如 23/4，表示 2 音符后跟 3/4 时值）
+  - 优化 parseDurationModifiers 函数，正确处理数字+分数的组合
+  - 改进简谱解析逻辑，支持更多时值表示形式
+- 新增《夕颜》乐谱示例
+  - 在 ABCNotation.md 添加《夕颜》ABC 记谱法示例
+  - 使用 YueLiNotes 组件展示，支持播放和五线谱渲染
+- 优化 GoToPage.vue 加载页面
+  - 简化加载状态文本，改为"发呆中..."
+  - 提升用户体验和趣味性
+- 更新路由映射
+  - 自动生成 .valaxy/route-map.d.ts
+  - 添加 /test/jianpu_parse 路由
 
 ### 2026-03-30
 - 修复简谱降号转换错误

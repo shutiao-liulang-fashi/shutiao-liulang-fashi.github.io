@@ -36,7 +36,7 @@ const props = withDefaults(defineProps<Props>(), {
   }),
   showSheetMusic: false,
   showTitle: false,
-  showNotes: true,
+  showNotes: false,
 })
 
 // 错误状态
@@ -78,12 +78,6 @@ const mergedOptions = computed(() => {
   }
 })
 
-/**
- * 检查用户传入的 ABC 是否包含头部信息（仅 abc 类型）
- */
-const hasUserHeader = computed(() => {
-  return props.notationType === 'abc' && hasAbcHeader(props.notes)
-})
 
 /**
  * 将记谱法转换为 ABC 记谱法
@@ -112,6 +106,9 @@ const abcString = computed(() => {
 })
 
 
+// 播放状态
+const isPlaying = ref(false)
+
 // 组件挂载时初始化 ABC 处理器
 onMounted(async () => {
   // 创建处理器实例
@@ -123,10 +120,10 @@ onMounted(async () => {
     showTitle: props.showTitle,
     tempo: parseInt(mergedOptions.value.tempo, 10),
     onPlay: () => {
-      // 可以在这里处理播放开始事件
+      isPlaying.value = true
     },
     onStop: () => {
-      // 可以在这里处理播放停止事件
+      isPlaying.value = false
     }
   })
 
@@ -146,6 +143,9 @@ watch(abcString, async (newAbcString) => {
 // 监听 showSheetMusic 变化
 watch(() => props.showSheetMusic, async (newValue) => {
   if (abcHandler.value) {
+    // 停止播放并重置状态
+    isPlaying.value = false
+
     // 重新创建处理器以更新配置
     abcHandler.value.dispose()
     abcHandler.value = new AbcHandler({
@@ -156,10 +156,10 @@ watch(() => props.showSheetMusic, async (newValue) => {
       showTitle: props.showTitle,
       tempo: parseInt(mergedOptions.value.tempo, 10),
       onPlay: () => {
-        // 可以在这里处理播放开始事件
+        isPlaying.value = true
       },
       onStop: () => {
-        // 可以在这里处理播放停止事件
+        isPlaying.value = false
       }
     })
 
@@ -215,6 +215,17 @@ function stop() {
     abcHandler.value.stop()
   }
 }
+
+/**
+ * 切换播放/停止
+ */
+async function togglePlayback() {
+  if (isPlaying.value) {
+    stop()
+  } else {
+    await play()
+  }
+}
 </script>
 
 <template>
@@ -224,14 +235,22 @@ function stop() {
       v-if="showNotes"
       class="note-info"
       :class="{ 'clickable': props.notes && props.notes.trim() }"
-      @click="props.notes && props.notes.trim() ? play() : null"
     >
+      <!-- 播放/停止切换按钮（音符信息区域） -->
+      <button
+        v-if="abcString"
+        class="play-stop-button"
+        :class="{ 'playing': isPlaying }"
+        @click.stop="togglePlayback"
+        :disabled="!abcString"
+      >
+        <span v-if="isPlaying" class="icon-stop">⏹</span>
+        <span v-else class="icon-play">▶</span>
+      </button>
+
       <div class="note-display">
         <pre v-if="notationType === 'abc'">{{ props.notes || '无乐谱' }}</pre>
         <template v-else>{{ props.notes || '无音符' }}</template>
-      </div>
-      <div v-if="hasUserHeader" class="header-indicator">
-        📝 包含头部信息
       </div>
       <div v-if="error" class="error-message">
         {{ error }}
@@ -243,8 +262,19 @@ function stop() {
       v-if="showSheetMusic && abcString"
       class="sheet-music-container"
       :class="{ 'clickable': abcString }"
-      @click="abcString ? play() : null"
     >
+      <!-- 播放/停止切换按钮（五线谱区域，仅在无音符信息时显示） -->
+      <button
+        v-if="!showNotes"
+        class="play-stop-button"
+        :class="{ 'playing': isPlaying }"
+        @click.stop="togglePlayback"
+        :disabled="!abcString"
+      >
+        <span v-if="isPlaying" class="icon-stop">⏹</span>
+        <span v-else class="icon-play">▶</span>
+      </button>
+
       <div ref="sheetMusicContainer" class="abc-render-container" />
     </div>
   </div>
@@ -281,7 +311,6 @@ function stop() {
   white-space: pre-wrap; /* 保留换行符和空格 */
   word-break: break-all; /* 允许在任意字符间断行 */
   overflow-x: auto;
-  max-height: 300px;
   overflow-y: auto;
 }
 
@@ -345,5 +374,61 @@ function stop() {
 
 .abc-render-container :deep(.abcjs-system) {
   width: 100% !important;
+}
+
+/* 播放/停止切换按钮样式 */
+.play-stop-button {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--va-c-border);
+  background: var(--va-c-bg);
+  color: var(--va-c-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: all 0.2s ease;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.play-stop-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  border-color: var(--va-c-primary);
+  background: var(--va-c-primary-soft);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.play-stop-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.play-stop-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.play-stop-button.playing {
+  border-color: var(--va-c-error);
+  background: var(--va-c-error-soft);
+  color: var(--va-c-error);
+}
+
+.play-stop-button.playing:hover:not(:disabled) {
+  background: var(--va-c-error-bg);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.play-stop-button .icon-play,
+.play-stop-button .icon-stop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 </style>

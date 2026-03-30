@@ -19,14 +19,13 @@ onMounted(() => {
 
   // 阶段 1: DOMContentLoaded
   const handleDOMContentLoaded = () => {
-    loadingStatus.value = '加载页面结构...'
+    loadingStatus.value = '发呆中...'
   }
 
   // 阶段 2: 资源加载完成
   const handleLoad = () => {
     // 模拟一些异步操作
     setTimeout(() => {
-      loadingStatus.value = '发呆中...'
       setTimeout(() => {
         setTimeout(() => {
           // 使用 Vue Router 跳转

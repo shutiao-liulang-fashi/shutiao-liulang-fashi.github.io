@@ -5,6 +5,7 @@ import { jianpuToAbc, type ConversionOptions as JianpuConversionOptions } from '
 import { scientificToAbc, type ConversionOptions as ScientificConversionOptions } from './core/scientificToAbc'
 import { abcToAbc, type AbcConversionOptions } from './core/abcToAbc'
 import { AbcHandler } from './core/abcjsHandler'
+import { xiyan } from './core/jianpu_xiyan'
 
 // 基音选项
 const baseNoteOptions = [
@@ -82,27 +83,11 @@ const unitNoteLengthOptions = [
 ]
 
 // 输入框的值
-const jianpuInput = ref(`
-X:1
-T:简谱
-M:4/4
-L:1/4
-Q:120
-K:C
-6/2 1'/2 |
-2' 2'/2 1'/2 2'/2 3'/4 2'/4 1'/2 2'/2  |
-3'/2 5'/2 5'/2 6'/2 3'  3'/2 5'/2 |
-2' 2'/2 1'/2 2'/2 1'/2 1'/2 2'/2 |
-3'2 0 |
-6/2 1'/2 |
-2' 2' 2'/2 3'/4 2'/4 1'/2 2'/2 |
-3'/2 5'/2 5'/2 6'/2 3' 5'/2 3'/2 |
-2' 5'/2 3'/2 2'/2 6/2 6/2 1'/2 |
-1'2 0 |
-`)
+const jianpuInput = ref('')
 const scientificInput = ref('')
 const abcInput = ref('')
 
+jianpuInput.value = xiyan
 scientificInput.value = jianpuToScientific(jianpuInput.value, {
   baseNote: selectedBaseNote.value
 })
