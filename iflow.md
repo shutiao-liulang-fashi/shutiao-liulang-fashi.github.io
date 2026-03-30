@@ -790,9 +790,30 @@ const abcString = scientificToAbc('C4 D4 E4 F4', {
 
 ---
 
-**最后更新**: 2026-03-29
+**最后更新**: 2026-03-30
 
 ## 更新日志
+
+### 2026-03-30
+- 修复简谱降号转换错误
+  - 修复 jianpuToAbc.ts 降号转换逻辑（2b 应转为 _D 而非 _B）
+  - 修复 jianpuToScientific.ts 降号转换逻辑
+  - 添加降号音名映射表 semitoneOffsetToFlatNoteName
+  - 根据升降号自动选择正确的音名映射表
+- 优化音源下载
+  - 修复 download-helper.cjs 使用正确的降号格式（Db, Eb, Gb, Ab, Bb）
+  - 完整下载 88 个音源文件（A0 到 C8）
+  - 音源目录：test/music/acoustic_grand_piano-mp3/
+- 优化 Yueqin.vue 月琴组件
+  - 添加 highlightPosition 函数用于音符高亮显示
+  - 优化播放跳动效果，确保每次音符事件都有明显的闪烁
+  - 区分长音（一次播放）和多个短音（多次播放）的视觉效果
+  - 统一 play 函数和 onMounted 中的事件处理逻辑
+- 优化 GoToPage.vue 加载页面
+  - 跳转方式改为 Vue Router 的 router.push()，保持 SPA 特性
+  - 优化单词间距，每个单词之间添加 8px 间隔
+  - 禁止所有文字选中（user-select: none）
+  - 提升页面跳转流畅度和用户体验
 
 ### 2026-03-29
 - 优化 abcjsHandler.ts 音频播放器
