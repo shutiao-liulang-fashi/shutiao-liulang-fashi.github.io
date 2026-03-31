@@ -100,12 +100,16 @@ export function jianpuToAbc(
       abcNotes += '\n';
       needSpace = false;
     } else if (current) {
-      // 正常音符
-      if (needSpace) {
+      // 检查是否为括号（括号不需要前导空格）
+      const isBracket = current === '(' || current === ')';
+
+      // 括号不需要前导空格
+      if (!isBracket && needSpace) {
         abcNotes += ' ';
       }
       abcNotes += current;
-      needSpace = true; // 下一个非换行符需要空格
+      // 括号后不需要空格，其他符号和音符后需要空格
+      needSpace = !isBracket;
     }
     // 空字符串跳过
   }

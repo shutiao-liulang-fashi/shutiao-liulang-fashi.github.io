@@ -109,9 +109,18 @@ const abcString = computed(() => {
 // 播放状态
 const isPlaying = ref(false)
 
+// 当前显示的视图（音符信息或五线谱）
+const currentView = ref<'notes' | 'sheet-music'>('notes')
+
+// 是否需要显示切换按钮（音符信息和五线谱都存在时）
+const showToggleButton = computed(() => {
+  return props.showNotes && props.showSheetMusic
+})
+
 // 组件挂载时初始化 ABC 处理器
 onMounted(async () => {
   // 创建处理器实例
+  console.log('Initializing AbcHandler with ABC string:', abcString.value)
   abcHandler.value = new AbcHandler({
     abcString: abcString.value,
     enablePlayback: true,
@@ -226,28 +235,46 @@ async function togglePlayback() {
     await play()
   }
 }
+
+/**
+ * 切换视图（音符信息 <-> 五线谱）
+ */
+function toggleView() {
+  currentView.value = currentView.value === 'notes' ? 'sheet-music' : 'notes'
+}
 </script>
 
 <template>
   <div class="play-note">
+    <!-- 播放控制区域 -->
+    <div v-if="abcString" class="play-control-section">
+      <button
+        class="play-stop-button"
+        :class="{ 'playing': isPlaying }"
+        @click="togglePlayback"
+        :disabled="!abcString"
+      >
+        <span class="icon">{{ isPlaying ? '⏹' : '▶' }}</span>
+        <span class="text">{{ isPlaying ? '停止' : '播放' }}</span>
+      </button>
+
+      <!-- 切换按钮（仅在两者都存在时显示） -->
+      <button
+        v-if="showToggleButton"
+        class="toggle-view-button"
+        @click="toggleView"
+      >
+        <span class="icon">{{ currentView === 'notes' ? '📜' : '🎵' }}</span>
+        <span class="text">{{ currentView === 'notes' ? '查看五线谱' : '查看音符' }}</span>
+      </button>
+    </div>
+
     <!-- 显示音符信息 -->
     <div
-      v-if="showNotes"
+      v-show="showNotes && (currentView === 'notes' || !showSheetMusic)"
       class="note-info"
       :class="{ 'clickable': props.notes && props.notes.trim() }"
     >
-      <!-- 播放/停止切换按钮（音符信息区域） -->
-      <button
-        v-if="abcString"
-        class="play-stop-button"
-        :class="{ 'playing': isPlaying }"
-        @click.stop="togglePlayback"
-        :disabled="!abcString"
-      >
-        <span v-if="isPlaying" class="icon-stop">⏹</span>
-        <span v-else class="icon-play">▶</span>
-      </button>
-
       <div class="note-display">
         <pre v-if="notationType === 'abc'">{{ props.notes || '无乐谱' }}</pre>
         <template v-else>{{ props.notes || '无音符' }}</template>
@@ -259,22 +286,10 @@ async function togglePlayback() {
 
     <!-- 显示五线谱（可选） -->
     <div
-      v-if="showSheetMusic && abcString"
+      v-show="showSheetMusic && abcString && (currentView === 'sheet-music' || !showNotes)"
       class="sheet-music-container"
       :class="{ 'clickable': abcString }"
     >
-      <!-- 播放/停止切换按钮（五线谱区域，仅在无音符信息时显示） -->
-      <button
-        v-if="!showNotes"
-        class="play-stop-button"
-        :class="{ 'playing': isPlaying }"
-        @click.stop="togglePlayback"
-        :disabled="!abcString"
-      >
-        <span v-if="isPlaying" class="icon-stop">⏹</span>
-        <span v-else class="icon-play">▶</span>
-      </button>
-
       <div ref="sheetMusicContainer" class="abc-render-container" />
     </div>
   </div>
@@ -285,6 +300,15 @@ async function togglePlayback() {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.play-control-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: var(--va-c-bg-soft);
+  border-radius: 0.5rem;
 }
 
 .note-info {
@@ -378,34 +402,31 @@ async function togglePlayback() {
 
 /* 播放/停止切换按钮样式 */
 .play-stop-button {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid var(--va-c-border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--va-c-border);
+  border-radius: 0.375rem;
   background: var(--va-c-bg);
   color: var(--va-c-text);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   transition: all 0.2s ease;
-  z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  min-width: 100px;
+  justify-content: center;
 }
 
 .play-stop-button:hover:not(:disabled) {
-  transform: scale(1.05);
   border-color: var(--va-c-primary);
   background: var(--va-c-primary-soft);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: var(--va-c-primary);
 }
 
 .play-stop-button:active:not(:disabled) {
-  transform: scale(0.95);
+  transform: translateY(1px);
 }
 
 .play-stop-button:disabled {
@@ -421,14 +442,53 @@ async function togglePlayback() {
 
 .play-stop-button.playing:hover:not(:disabled) {
   background: var(--va-c-error-bg);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  color: var(--va-c-error);
 }
 
-.play-stop-button .icon-play,
-.play-stop-button .icon-stop {
+.play-stop-button .icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.play-stop-button .text {
+  line-height: 1;
+}
+
+/* 切换视图按钮样式 */
+.toggle-view-button {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--va-c-border);
+  border-radius: 0.375rem;
+  background: var(--va-c-bg);
+  color: var(--va-c-text);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  min-width: 140px;
   justify-content: center;
+}
+
+.toggle-view-button:hover {
+  border-color: var(--va-c-primary);
+  background: var(--va-c-primary-soft);
+  color: var(--va-c-primary);
+}
+
+.toggle-view-button:active {
+  transform: translateY(1px);
+}
+
+.toggle-view-button .icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.toggle-view-button .text {
   line-height: 1;
 }
 </style>

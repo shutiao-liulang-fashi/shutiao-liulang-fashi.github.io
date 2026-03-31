@@ -756,8 +756,11 @@ onBeforeUnmount(() => {
   color: var(--va-c-text);
   font-family: 'Courier New', monospace;
   font-size: 0.875rem;
-  resize: vertical;
+  resize: both;
   min-height: 159px;
+  white-space: pre;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 .note-input:focus {
@@ -828,8 +831,7 @@ onBeforeUnmount(() => {
   font-family: 'Courier New', monospace;
   font-size: 0.75rem;
   color: var(--va-c-text-light);
-  white-space: pre-wrap;
-  word-break: break-all;
+  white-space: pre;
   overflow-x: auto;
   max-height: 300px;
   overflow-y: auto;

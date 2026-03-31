@@ -10,6 +10,12 @@ const sidebar =  [
     text: '乐理',
     link: '/yueli/',
     collapsed: false,
+    items: [
+      {
+        text: 'ABC 记谱法',
+        link: '/yueli/ABCNotation/',
+      }
+     ],
   },
 ]
 

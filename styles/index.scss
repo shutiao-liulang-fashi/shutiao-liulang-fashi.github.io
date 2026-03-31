@@ -39,3 +39,10 @@
   visibility: visible !important;
   z-index: 0 !important;
 }
+
+
+@media screen and (max-width: 640px) {
+    .press-sidebar {
+        top: var(--pr-nav-height) !important;
+    }
+}
