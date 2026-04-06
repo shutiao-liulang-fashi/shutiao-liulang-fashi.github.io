@@ -24,6 +24,8 @@ interface Props {
   showTitle?: boolean
   /** 是否显示音符信息 */
   showNotes?: boolean
+  /** 是否显示播放按钮（仅当 notes 存在时） */
+  showPlayButton?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -37,6 +39,7 @@ const props = withDefaults(defineProps<Props>(), {
   showSheetMusic: false,
   showTitle: false,
   showNotes: false,
+  showPlayButton: false
 })
 
 // 错误状态
@@ -120,7 +123,6 @@ const showToggleButton = computed(() => {
 // 组件挂载时初始化 ABC 处理器
 onMounted(async () => {
   // 创建处理器实例
-  console.log('Initializing AbcHandler with ABC string:', abcString.value)
   abcHandler.value = new AbcHandler({
     abcString: abcString.value,
     enablePlayback: true,
@@ -203,7 +205,6 @@ async function play() {
     return
   }
 
-  console.log('Playing ABC string:', abcString.value)
   try {
     // 清除之前的错误
     error.value = null
@@ -247,7 +248,7 @@ function toggleView() {
 <template>
   <div class="play-note">
     <!-- 播放控制区域 -->
-    <div v-if="abcString" class="play-control-section">
+    <div v-if="abcString && showPlayButton" class="play-control-section">
       <button
         class="play-stop-button"
         :class="{ 'playing': isPlaying }"

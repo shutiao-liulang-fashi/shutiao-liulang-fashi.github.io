@@ -390,7 +390,6 @@ export class AbcHandler {
     }
 
     if (this.isPlayingState) {
-      console.log('正在播放中，忽略重复播放请求')
       return
     }
 

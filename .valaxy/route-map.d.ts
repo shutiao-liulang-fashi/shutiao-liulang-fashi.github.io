@@ -62,44 +62,9 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/test/jianpu_parse': RouteRecordInfo<
-      '/test/jianpu_parse',
-      '/test/jianpu_parse',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/yueli/': RouteRecordInfo<
       '/yueli/',
       '/yueli',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/yueli/规则/科学谱转换ABC规则V2_1': RouteRecordInfo<
-      '/yueli/规则/科学谱转换ABC规则V2_1',
-      '/yueli/%E8%A7%84%E5%88%99/%E7%A7%91%E5%AD%A6%E8%B0%B1%E8%BD%AC%E6%8D%A2ABC%E8%A7%84%E5%88%99V2_1',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/yueli/规则/简谱转换科学谱规则V2_1': RouteRecordInfo<
-      '/yueli/规则/简谱转换科学谱规则V2_1',
-      '/yueli/%E8%A7%84%E5%88%99/%E7%AE%80%E8%B0%B1%E8%BD%AC%E6%8D%A2%E7%A7%91%E5%AD%A6%E8%B0%B1%E8%A7%84%E5%88%99V2_1',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/yueli/规则/简谱转换ABC规则V2_1': RouteRecordInfo<
-      '/yueli/规则/简谱转换ABC规则V2_1',
-      '/yueli/%E8%A7%84%E5%88%99/%E7%AE%80%E8%B0%B1%E8%BD%AC%E6%8D%A2ABC%E8%A7%84%E5%88%99V2_1',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/yueli/规则/ABC规则V2_1_en': RouteRecordInfo<
-      '/yueli/规则/ABC规则V2_1_en',
-      '/yueli/%E8%A7%84%E5%88%99/ABC%E8%A7%84%E5%88%99V2_1_en',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -121,6 +86,13 @@ declare module 'vue-router/auto-routes' {
     '/yueli/playground': RouteRecordInfo<
       '/yueli/playground',
       '/yueli/playground',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/yueli/staff': RouteRecordInfo<
+      '/yueli/staff',
+      '/yueli/staff',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -168,39 +140,9 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
-    'pages/test/jianpu_parse.md': {
-      routes:
-        | '/test/jianpu_parse'
-      views:
-        | never
-    }
     'pages/yueli/index.md': {
       routes:
         | '/yueli/'
-      views:
-        | never
-    }
-    'pages/yueli/规则/科学谱转换ABC规则V2_1.md': {
-      routes:
-        | '/yueli/规则/科学谱转换ABC规则V2_1'
-      views:
-        | never
-    }
-    'pages/yueli/规则/简谱转换科学谱规则V2_1.md': {
-      routes:
-        | '/yueli/规则/简谱转换科学谱规则V2_1'
-      views:
-        | never
-    }
-    'pages/yueli/规则/简谱转换ABC规则V2_1.md': {
-      routes:
-        | '/yueli/规则/简谱转换ABC规则V2_1'
-      views:
-        | never
-    }
-    'pages/yueli/规则/ABC规则V2_1_en.md': {
-      routes:
-        | '/yueli/规则/ABC规则V2_1_en'
       views:
         | never
     }
@@ -219,6 +161,12 @@ declare module 'vue-router/auto-routes' {
     'pages/yueli/playground.md': {
       routes:
         | '/yueli/playground'
+      views:
+        | never
+    }
+    'pages/yueli/staff.md': {
+      routes:
+        | '/yueli/staff'
       views:
         | never
     }

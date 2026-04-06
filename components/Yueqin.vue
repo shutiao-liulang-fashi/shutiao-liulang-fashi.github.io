@@ -212,7 +212,7 @@ const tuning = ref({
 })
 
 // ABC 输入
-const abcInput = ref('')
+const abcInput = ref(' c d e f g a b ')
 
 // 选项
 const options = ref({

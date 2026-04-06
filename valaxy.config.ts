@@ -1,7 +1,7 @@
 import { defineValaxyConfig } from 'valaxy'
 
 const nav = [] as any
-const sidebar =  [
+const sidebar = [
   {
     text: '开始',
     link: '/start/',
@@ -14,11 +14,22 @@ const sidebar =  [
       {
         text: 'ABC 记谱法',
         link: '/yueli/ABCNotation/',
-      }
-     ],
+      },
+      {
+        text: '月琴',
+        link: '/yueli/p_yueqin/',
+      },
+      {
+        text: 'playground',
+        link: '/yueli/playground/',
+      },
+      {
+        text: '五线谱',
+        link: '/yueli/staff/',
+      },
+    ]
   },
-]
-
+] as any
 
 
 export default defineValaxyConfig({
