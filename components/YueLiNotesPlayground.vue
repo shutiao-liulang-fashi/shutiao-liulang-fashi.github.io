@@ -87,7 +87,7 @@ const jianpuInput = ref('')
 const scientificInput = ref('')
 const abcInput = ref('')
 
-jianpuInput.value = xiyan
+jianpuInput.value = ''
 scientificInput.value = jianpuToScientific(jianpuInput.value, {
   baseNote: selectedBaseNote.value
 })
@@ -292,6 +292,17 @@ function stopJianpu() {
   }
 }
 
+/**
+ * 切换简谱播放/停止
+ */
+async function togglePlaybackJianpu() {
+  if (jianpuPlaying.value) {
+    stopJianpu()
+  } else {
+    await playJianpu()
+  }
+}
+
 // 科学谱播放功能
 async function playScientific() {
   if (!computedAbcFromScientific.value || !scientificHandler.value) return
@@ -309,6 +320,17 @@ function stopScientific() {
   if (scientificHandler.value) {
     scientificHandler.value.stop()
     scientificPlaying.value = false
+  }
+}
+
+/**
+ * 切换科学谱播放/停止
+ */
+async function togglePlaybackScientific() {
+  if (scientificPlaying.value) {
+    stopScientific()
+  } else {
+    await playScientific()
   }
 }
 
@@ -332,6 +354,17 @@ function stopAbc() {
   }
 }
 
+/**
+ * 切换 ABC 谱播放/停止
+ */
+async function togglePlaybackAbc() {
+  if (abcPlaying.value) {
+    stopAbc()
+  } else {
+    await playAbc()
+  }
+}
+
 // 组件挂载时初始化
 onMounted(async () => {
   await nextTick()
@@ -346,9 +379,6 @@ onMounted(async () => {
       tempo: parseInt(selectedTempo.value),
       onPlay: () => { jianpuPlaying.value = true },
       onStop: () => { jianpuPlaying.value = false },
-      onNoteClick: (noteIndex) => {
-        jianpuHandler.value?.playFromNote(noteIndex)
-      },
       responsive: true
     })
     await jianpuHandler.value.render()
@@ -364,9 +394,6 @@ onMounted(async () => {
       tempo: parseInt(selectedTempo.value),
       onPlay: () => { scientificPlaying.value = true },
       onStop: () => { scientificPlaying.value = false },
-      onNoteClick: (noteIndex) => {
-        scientificHandler.value?.playFromNote(noteIndex)
-      },
       responsive: true
     })
     await scientificHandler.value.render()
@@ -382,9 +409,6 @@ onMounted(async () => {
       tempo: parseInt(selectedTempo.value),
       onPlay: () => { abcPlaying.value = true },
       onStop: () => { abcPlaying.value = false },
-      onNoteClick: (noteIndex) => {
-        abcHandler.value?.playFromNote(noteIndex)
-      },
       responsive: true
     })
     await abcHandler.value.render()
@@ -535,10 +559,12 @@ onBeforeUnmount(() => {
           <div class="button-group">
             <button
               class="btn btn-play"
-              @click="playJianpu"
-              :disabled="!jianpuInput.trim() || jianpuPlaying"
+              :class="{ 'playing': jianpuPlaying }"
+              @click="togglePlaybackJianpu"
+              :disabled="!jianpuInput.trim()"
             >
-              ▶ 播放
+              <span class="icon">{{ jianpuPlaying ? '⏹' : '▶' }}</span>
+              <span class="text">{{ jianpuPlaying ? '停止' : '播放' }}</span>
             </button>
           </div>
         </div>
@@ -571,10 +597,12 @@ onBeforeUnmount(() => {
           <div class="button-group">
             <button
               class="btn btn-play"
-              @click="playScientific"
-              :disabled="!scientificInput.trim() || scientificPlaying"
+              :class="{ 'playing': scientificPlaying }"
+              @click="togglePlaybackScientific"
+              :disabled="!scientificInput.trim()"
             >
-              ▶ 播放
+              <span class="icon">{{ scientificPlaying ? '⏹' : '▶' }}</span>
+              <span class="text">{{ scientificPlaying ? '停止' : '播放' }}</span>
             </button>
           </div>
         </div>
@@ -601,10 +629,12 @@ onBeforeUnmount(() => {
           <div class="button-group">
             <button
               class="btn btn-play"
-              @click="playAbc"
-              :disabled="!abcInput.trim() || abcPlaying"
+              :class="{ 'playing': abcPlaying }"
+              @click="togglePlaybackAbc"
+              :disabled="!abcInput.trim()"
             >
-              ▶ 播放
+              <span class="icon">{{ abcPlaying ? '⏹' : '▶' }}</span>
+              <span class="text">{{ abcPlaying ? '停止' : '播放' }}</span>
             </button>
           </div>
         </div>
@@ -757,7 +787,7 @@ onBeforeUnmount(() => {
   font-family: 'Courier New', monospace;
   font-size: 0.875rem;
   resize: both;
-  min-height: 159px;
+  min-height: 300px;
   white-space: pre;
   overflow-x: auto;
   overflow-y: auto;
@@ -776,17 +806,19 @@ onBeforeUnmount(() => {
 
 .btn {
   flex: 1;
-  padding: 0.375rem 0.5rem;
+  padding: 0.75rem 1.25rem;
   border: none;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  min-width: 120px;
+  min-height: 48px;
 }
 
 .btn:disabled {
@@ -800,9 +832,22 @@ onBeforeUnmount(() => {
 }
 
 .btn-play:hover:not(:disabled) {
-  background: var(--va-c-primary-dark);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(var(--va-c-primary-rgb), 0.3);
+}
+
+
+.btn-play.playing:hover:not(:disabled) {
+  box-shadow: 0 2px 8px rgba(var(--va-c-error-rgb), 0.3);
+}
+
+.btn-play .icon {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.btn-play .text {
+  line-height: 1;
 }
 
 

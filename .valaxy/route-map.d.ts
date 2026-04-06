@@ -48,51 +48,37 @@ declare module 'vue-router/auto-routes' {
       { path: ParamValue<false> },
       | never
     >,
+    '/0_start/': RouteRecordInfo<
+      '/0_start/',
+      '/0_start',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/1_yueli/': RouteRecordInfo<
+      '/1_yueli/',
+      '/1_yueli',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/1_yueli/1_pu/': RouteRecordInfo<
+      '/1_yueli/1_pu/',
+      '/1_yueli/1_pu',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/1_yueli/2_playground/': RouteRecordInfo<
+      '/1_yueli/2_playground/',
+      '/1_yueli/2_playground',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/404': RouteRecordInfo<
       '/404',
       '/404',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/start/': RouteRecordInfo<
-      '/start/',
-      '/start',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/yueli/': RouteRecordInfo<
-      '/yueli/',
-      '/yueli',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/yueli/ABCNotation': RouteRecordInfo<
-      '/yueli/ABCNotation',
-      '/yueli/ABCNotation',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/yueli/p_yueqin': RouteRecordInfo<
-      '/yueli/p_yueqin',
-      '/yueli/p_yueqin',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/yueli/playground': RouteRecordInfo<
-      '/yueli/playground',
-      '/yueli/playground',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/yueli/staff': RouteRecordInfo<
-      '/yueli/staff',
-      '/yueli/staff',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -128,45 +114,33 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
+    'pages/0_start/index.md': {
+      routes:
+        | '/0_start/'
+      views:
+        | never
+    }
+    'pages/1_yueli/index.md': {
+      routes:
+        | '/1_yueli/'
+      views:
+        | never
+    }
+    'pages/1_yueli/1_pu/index.md': {
+      routes:
+        | '/1_yueli/1_pu/'
+      views:
+        | never
+    }
+    'pages/1_yueli/2_playground/index.md': {
+      routes:
+        | '/1_yueli/2_playground/'
+      views:
+        | never
+    }
     'pages/404.md': {
       routes:
         | '/404'
-      views:
-        | never
-    }
-    'pages/start/index.md': {
-      routes:
-        | '/start/'
-      views:
-        | never
-    }
-    'pages/yueli/index.md': {
-      routes:
-        | '/yueli/'
-      views:
-        | never
-    }
-    'pages/yueli/ABCNotation.md': {
-      routes:
-        | '/yueli/ABCNotation'
-      views:
-        | never
-    }
-    'pages/yueli/p_yueqin.md': {
-      routes:
-        | '/yueli/p_yueqin'
-      views:
-        | never
-    }
-    'pages/yueli/playground.md': {
-      routes:
-        | '/yueli/playground'
-      views:
-        | never
-    }
-    'pages/yueli/staff.md': {
-      routes:
-        | '/yueli/staff'
       views:
         | never
     }

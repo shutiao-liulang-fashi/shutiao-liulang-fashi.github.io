@@ -4,28 +4,20 @@ const nav = [] as any
 const sidebar = [
   {
     text: '开始',
-    link: '/start/',
+    link: '/0_start/',
   },
   {
     text: '乐理',
-    link: '/yueli/',
+    link: '/1_yueli/',
     collapsed: false,
     items: [
       {
-        text: 'ABC 记谱法',
-        link: '/yueli/ABCNotation/',
+        text: '四种记谱法',
+        link: '/1_yueli/1_pu/',
       },
       {
-        text: '月琴',
-        link: '/yueli/p_yueqin/',
-      },
-      {
-        text: 'playground',
-        link: '/yueli/playground/',
-      },
-      {
-        text: '五线谱',
-        link: '/yueli/staff/',
+        text: '乐理游乐场',
+        link: '/1_yueli/2_playground/',
       },
     ]
   },

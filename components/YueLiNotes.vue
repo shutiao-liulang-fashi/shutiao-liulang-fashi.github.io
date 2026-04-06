@@ -39,7 +39,7 @@ const props = withDefaults(defineProps<Props>(), {
   showSheetMusic: false,
   showTitle: false,
   showNotes: false,
-  showPlayButton: false
+  showPlayButton: true
 })
 
 // 错误状态
@@ -135,7 +135,7 @@ onMounted(async () => {
     },
     onStop: () => {
       isPlaying.value = false
-    }
+    },
   })
 
   // 如果启用了渲染，执行初始渲染
@@ -301,14 +301,19 @@ function toggleView() {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  position: relative;
+  border: 1px solid var(--va-c-border);
 }
 
 .play-control-section {
+  position: absolute;
+  z-index: 1;
+  top: 1rem;
+  right: 1rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 0.5rem;
-  background: var(--va-c-bg-soft);
   border-radius: 0.5rem;
 }
 
@@ -329,7 +334,6 @@ function toggleView() {
   font-size: 1.2rem;
   font-weight: 600;
   padding: 0.75rem;
-  background: var(--va-c-bg-soft);
   border-radius: 0.5rem;
   color: var(--va-c-text);
   font-family: 'Courier New', monospace;
@@ -353,7 +357,6 @@ function toggleView() {
   font-size: 0.75rem;
   color: var(--va-c-success);
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.9);
   border-radius: 0.25rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 10;
@@ -361,7 +364,6 @@ function toggleView() {
 
 .error-message {
   padding: 0.5rem 0.75rem;
-  background: var(--va-c-error-bg);
   color: var(--va-c-error);
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -409,7 +411,6 @@ function toggleView() {
   padding: 0.75rem 1.25rem;
   border: 1px solid var(--va-c-border);
   border-radius: 0.375rem;
-  background: var(--va-c-bg);
   color: var(--va-c-text);
   cursor: pointer;
   font-size: 0.875rem;

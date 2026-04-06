@@ -46,6 +46,8 @@ export interface AbcHandlerOptions {
   tempo?: number
   cursorControl?: CursorControl
 
+  /** 音源 URL（可选，如果不提供则使用 abcjs 默认音源） */
+  soundFontUrl?: string
 
   /** 渲染相关选项 */
   renderOptions?: ABCJS.RenderOptions
@@ -106,6 +108,7 @@ export class AbcHandler {
   private isPlayingState = false
   private volume: number = 0.8
   private tempo: number = 120
+  private soundFontUrl?: string
   private onPlayCallback?: () => void
   private onStopCallback?: () => void
   private cursorControlOptions?: CursorControl
@@ -129,13 +132,14 @@ export class AbcHandler {
    */
   constructor(options: AbcHandlerOptions) {
     const {
-      abcString,
+      abcString = '',
       enablePlayback = false,
       enableRender = false,
       container,
       volume = 0.8,
       tempo = 120,
       cursorControl,
+      soundFontUrl = '/music/',
       renderOptions,
       showTitle,
       onPlay,
@@ -143,15 +147,14 @@ export class AbcHandler {
       responsive = false
     } = options
 
-    if (!abcString) {
-      throw new Error('abcString 不能为空')
-    }
+
 
     this.currentAbcString = abcString
     this.enablePlayback = enablePlayback
     this.enableRender = enableRender
     this.volume = Math.max(0, Math.min(1, volume))
     this.tempo = tempo
+    this.soundFontUrl = soundFontUrl
     this.cursorControlOptions = cursorControl
     this.renderOptions = renderOptions
     this.showTitle = showTitle !== undefined ? showTitle : this.hasTitleInAbc(abcString)
@@ -371,10 +374,17 @@ export class AbcHandler {
       await new Promise(resolve => setTimeout(resolve, 200))
 
       // 设置 tune（但不播放）
-      await this.synthController.setTune(this.visualObj, false, {
+      const audioParams: any = {
         soundFontVolumeMultiplier: this.volume,
         qpm: this.tempo,
-      })
+      }
+
+      // 如果提供了 soundFontUrl，添加到参数中
+      if (this.soundFontUrl) {
+        audioParams.soundFontUrl = this.soundFontUrl
+      }
+
+      await this.synthController.setTune(this.visualObj, false, audioParams)
     } catch (error) {
       this.synthController = null
       throw new Error(`初始化播放器失败：${(error as Error).message}`)
@@ -450,11 +460,18 @@ export class AbcHandler {
       }
 
       // 重新设置 tune，并从指定音符开始播放
-      await this.synthController.setTune(this.visualObj, true, {
+      const audioParams: any = {
         soundFontVolumeMultiplier: this.volume,
         qpm: this.tempo,
         startDelay: noteIndex
-      })
+      }
+
+      // 如果提供了 soundFontUrl，添加到参数中
+      if (this.soundFontUrl) {
+        audioParams.soundFontUrl = this.soundFontUrl
+      }
+
+      await this.synthController.setTune(this.visualObj, true, audioParams)
 
       // 等待设置完成
       await new Promise(resolve => setTimeout(resolve, 100))
