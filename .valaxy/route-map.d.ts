@@ -62,6 +62,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/1_yueli/0_staff/': RouteRecordInfo<
+      '/1_yueli/0_staff/',
+      '/1_yueli/0_staff',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/1_yueli/1_pu/': RouteRecordInfo<
       '/1_yueli/1_pu/',
       '/1_yueli/1_pu',
@@ -69,9 +76,9 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/1_yueli/2_playground/': RouteRecordInfo<
-      '/1_yueli/2_playground/',
-      '/1_yueli/2_playground',
+    '/1_yueli/999_playground/': RouteRecordInfo<
+      '/1_yueli/999_playground/',
+      '/1_yueli/999_playground',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -126,15 +133,21 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
+    'pages/1_yueli/0_staff/index.md': {
+      routes:
+        | '/1_yueli/0_staff/'
+      views:
+        | never
+    }
     'pages/1_yueli/1_pu/index.md': {
       routes:
         | '/1_yueli/1_pu/'
       views:
         | never
     }
-    'pages/1_yueli/2_playground/index.md': {
+    'pages/1_yueli/999_playground/index.md': {
       routes:
-        | '/1_yueli/2_playground/'
+        | '/1_yueli/999_playground/'
       views:
         | never
     }

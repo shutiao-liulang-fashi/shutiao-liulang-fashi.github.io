@@ -103,6 +103,11 @@ abcInput.value = jianpuToAbc(jianpuInput.value, {
 // 当前选中的标签
 const selectedTab = ref<'jianpu' | 'scientific' | 'abc'>('jianpu')
 
+// 每栏的视图模式：'edit' = 编辑模式，'display' = 渲染模式
+const jianpuView = ref<'edit' | 'display'>('edit')
+const scientificView = ref<'edit' | 'display'>('edit')
+const abcView = ref<'edit' | 'display'>('edit')
+
 // 播放状态
 const jianpuPlaying = ref(false)
 const scientificPlaying = ref(false)
@@ -549,51 +554,106 @@ onBeforeUnmount(() => {
     <div class="note-section">
       <!-- 简谱部分 -->
       <div class="note-column" v-show="selectedTab === 'jianpu'">
-        <div class="input-row">
-          <textarea
-            v-model="jianpuInput"
-            class="note-input"
-            placeholder="输入简谱..."
-            rows="4"
-          />
-          <div class="button-group">
-            <button
-              class="btn btn-play"
-              :class="{ 'playing': jianpuPlaying }"
-              @click="togglePlaybackJianpu"
-              :disabled="!jianpuInput.trim()"
-            >
-              <span class="icon">{{ jianpuPlaying ? '⏹' : '▶' }}</span>
-              <span class="text">{{ jianpuPlaying ? '停止' : '播放' }}</span>
-            </button>
+        <!-- 视图切换按钮 -->
+        <div class="view-toggle">
+          <button
+            class="toggle-btn"
+            :class="{ active: jianpuView === 'edit' }"
+            @click="jianpuView = 'edit'"
+          >
+            <span class="toggle-icon">✏️</span>
+            <span class="toggle-text">编辑</span>
+          </button>
+          <button
+            class="toggle-btn"
+            :class="{ active: jianpuView === 'display' }"
+            @click="jianpuView = 'display'"
+          >
+            <span class="toggle-icon">🎼</span>
+            <span class="toggle-text">渲染</span>
+          </button>
+        </div>
+
+        <!-- 编辑视图 -->
+        <div v-show="jianpuView === 'edit'" class="edit-content">
+          <div class="input-row">
+            <textarea
+              v-model="jianpuInput"
+              class="note-input"
+              placeholder="输入简谱..."
+              rows="4"
+            />
           </div>
         </div>
-        <div class="abc-string-row">
-          <div class="abc-string-container">
-            <h4>科学谱：</h4>
-            <pre class="abc-string">{{ computedScientificFromJianpu || '（无内容）' }}</pre>
+
+        <!-- 渲染视图 -->
+        <div v-show="jianpuView === 'display'" class="display-content">
+            <div class="button-group">
+              <button
+                class="btn btn-play"
+                :class="{ 'playing': jianpuPlaying }"
+                @click="togglePlaybackJianpu"
+                :disabled="!jianpuInput.trim()"
+              >
+                <span class="icon">{{ jianpuPlaying ? '⏹' : '▶' }}</span>
+                <span class="text">{{ jianpuPlaying ? '停止' : '播放' }}</span>
+              </button>
+            </div>
+            
+          <div class="abc-string-row">
+            <div class="abc-string-container">
+              <h4>科学谱：</h4>
+              <pre class="abc-string">{{ computedScientificFromJianpu || '（无内容）' }}</pre>
+            </div>
           </div>
-        </div>
-        <div class="abc-string-row">
-          <div class="abc-string-container">
-            <h4>ABC 谱（用于渲染和播放）：</h4>
-            <pre class="abc-string">{{ computedAbcFromJianpu || '（无内容）' }}</pre>
+          <div class="abc-string-row">
+            <div class="abc-string-container">
+              <h4>ABC 谱（用于渲染和播放）：</h4>
+              <pre class="abc-string">{{ computedAbcFromJianpu || '（无内容）' }}</pre>
+            </div>
           </div>
-        </div>
-        <div class="render-row">
-          <div ref="jianpuRenderContainer" class="render-container"></div>
+          <div class="render-row">
+            <div ref="jianpuRenderContainer" class="render-container"></div>
+          </div>
         </div>
       </div>
 
       <!-- 科学谱部分 -->
       <div class="note-column" v-show="selectedTab === 'scientific'">
-        <div class="input-row">
-          <textarea
-            v-model="scientificInput"
-            class="note-input"
-            placeholder="输入科学谱..."
-            rows="4"
-          />
+        <!-- 视图切换按钮 -->
+        <div class="view-toggle">
+          <button
+            class="toggle-btn"
+            :class="{ active: scientificView === 'edit' }"
+            @click="scientificView = 'edit'"
+          >
+            <span class="toggle-icon">✏️</span>
+            <span class="toggle-text">编辑</span>
+          </button>
+          <button
+            class="toggle-btn"
+            :class="{ active: scientificView === 'display' }"
+            @click="scientificView = 'display'"
+          >
+            <span class="toggle-icon">🎼</span>
+            <span class="toggle-text">渲染</span>
+          </button>
+        </div>
+
+        <!-- 编辑视图 -->
+        <div v-show="scientificView === 'edit'" class="edit-content">
+          <div class="input-row">
+            <textarea
+              v-model="scientificInput"
+              class="note-input"
+              placeholder="输入科学谱..."
+              rows="4"
+            />
+          </div>
+        </div>
+
+        <!-- 渲染视图 -->
+        <div v-show="scientificView === 'display'" class="display-content">
           <div class="button-group">
             <button
               class="btn btn-play"
@@ -605,27 +665,55 @@ onBeforeUnmount(() => {
               <span class="text">{{ scientificPlaying ? '停止' : '播放' }}</span>
             </button>
           </div>
-        </div>
-        <div class="abc-string-row">
-          <div class="abc-string-container">
-            <h4>ABC 谱（用于渲染和播放）：</h4>
-            <pre class="abc-string">{{ computedAbcFromScientific || '（无内容）' }}</pre>
+          
+          <div class="abc-string-row">
+            <div class="abc-string-container">
+              <h4>ABC 谱（用于渲染和播放）：</h4>
+              <pre class="abc-string">{{ computedAbcFromScientific || '（无内容）' }}</pre>
+            </div>
           </div>
-        </div>
-        <div class="render-row">
-          <div ref="scientificRenderContainer" class="render-container"></div>
+          <div class="render-row">
+            <div ref="scientificRenderContainer" class="render-container"></div>
+          </div>
         </div>
       </div>
 
       <!-- ABC 谱部分 -->
       <div class="note-column" v-show="selectedTab === 'abc'">
-        <div class="input-row">
-          <textarea
-            v-model="abcInput"
-            class="note-input"
-            placeholder="输入 ABC 谱..."
-            rows="4"
-          />
+        <!-- 视图切换按钮 -->
+        <div class="view-toggle">
+          <button
+            class="toggle-btn"
+            :class="{ active: abcView === 'edit' }"
+            @click="abcView = 'edit'"
+          >
+            <span class="toggle-icon">✏️</span>
+            <span class="toggle-text">编辑</span>
+          </button>
+          <button
+            class="toggle-btn"
+            :class="{ active: abcView === 'display' }"
+            @click="abcView = 'display'"
+          >
+            <span class="toggle-icon">🎼</span>
+            <span class="toggle-text">渲染</span>
+          </button>
+        </div>
+
+        <!-- 编辑视图 -->
+        <div v-show="abcView === 'edit'" class="edit-content">
+          <div class="input-row">
+            <textarea
+              v-model="abcInput"
+              class="note-input"
+              placeholder="输入 ABC 谱..."
+              rows="4"
+            />
+          </div>
+        </div>
+
+        <!-- 渲染视图 -->
+        <div v-show="abcView === 'display'" class="display-content">
           <div class="button-group">
             <button
               class="btn btn-play"
@@ -637,15 +725,16 @@ onBeforeUnmount(() => {
               <span class="text">{{ abcPlaying ? '停止' : '播放' }}</span>
             </button>
           </div>
-        </div>
-        <div class="abc-string-row">
-          <div class="abc-string-container">
-            <h4>处理后的 ABC 谱（用于渲染和播放）：</h4>
-            <pre class="abc-string">{{ processedAbcInput || '（无内容）' }}</pre>
+          
+          <div class="abc-string-row">
+            <div class="abc-string-container">
+              <h4>处理后的 ABC 谱（用于渲染和播放）：</h4>
+              <pre class="abc-string">{{ processedAbcInput || '（无内容）' }}</pre>
+            </div>
           </div>
-        </div>
-        <div class="render-row">
-          <div ref="abcRenderContainer" class="render-container"></div>
+          <div class="render-row">
+            <div ref="abcRenderContainer" class="render-container"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -653,48 +742,53 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* 统一使用 CSS 变量 */
 .any-note {
   width: 100%;
   padding: 1rem;
+  background: var(--va-c-bg-soft);
+  border-radius: 0.5rem;
 }
 
 .options-section {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--va-c-bg-soft);
+  gap: 0.5rem;
+  padding: 0.625rem;
+  background: var(--va-c-bg);
   border-radius: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .option-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex: 1 1 calc(20% - 1rem);
-  min-width: 180px;
+  gap: 0.375rem;
+  flex: 1 1 calc(20% - 0.5rem);
+  min-width: 140px;
 }
 
 .option-item label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: var(--va-c-text);
+  color: var(--va-c-text-light);
   white-space: nowrap;
 }
 
 .option-select,
 .option-input {
   flex: 1;
-  padding: 0.5rem 0.75rem;
+  padding: 0.3125rem 0.5rem;
   border: 1px solid var(--va-c-divider);
-  border-radius: 0.375rem;
-  background: var(--va-c-bg);
+  border-radius: 0.25rem;
+  background: var(--va-c-bg-soft);
   color: var(--va-c-text);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-family: 'Courier New', monospace;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .option-input {
@@ -710,33 +804,33 @@ onBeforeUnmount(() => {
 .option-input:focus {
   outline: none;
   border-color: var(--va-c-primary);
-  box-shadow: 0 0 0 3px rgba(var(--va-c-primary-rgb), 0.1);
+  box-shadow: 0 0 0 2px rgba(var(--va-c-primary-rgb), 0.1);
 }
 
 .tab-bar {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   border-bottom: 2px solid var(--va-c-divider);
   padding-bottom: 0.5rem;
 }
 
 .tab-button {
   flex: 1;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1rem;
   border: none;
   background: transparent;
   color: var(--va-c-text-light);
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-radius: 0.5rem 0.5rem 0 0;
+  border-radius: 0.375rem 0.375rem 0 0;
   position: relative;
 }
 
 .tab-button:hover {
-  background: var(--va-c-bg-soft);
+  background: var(--va-c-bg);
   color: var(--va-c-text);
 }
 
@@ -749,7 +843,7 @@ onBeforeUnmount(() => {
 .tab-button.active::after {
   content: '';
   position: absolute;
-  bottom: -0.625rem;
+  bottom: -0.5625rem;
   left: 0;
   right: 0;
   height: 2px;
@@ -764,17 +858,70 @@ onBeforeUnmount(() => {
 .note-column {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   border: 1px solid var(--va-c-divider);
   border-radius: 0.5rem;
   padding: 1rem;
   background: var(--va-c-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* 视图切换按钮 - 统一风格 */
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--va-c-bg-soft);
+  border-radius: 0.375rem;
+}
+
+.toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--va-c-divider);
+  border-radius: 0.375rem;
+  background: var(--va-c-bg);
+  color: var(--va-c-text-light);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  border-color: var(--va-c-primary);
+  color: var(--va-c-primary);
+}
+
+.toggle-btn.active {
+  border-color: var(--va-c-primary);
+  background: rgba(var(--va-c-primary-rgb), 0.1);
+  color: var(--va-c-primary);
+}
+
+.toggle-icon {
+  font-size: 1rem;
+}
+
+.toggle-text {
+  line-height: 1;
+}
+
+.edit-content,
+.display-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .input-row {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .note-input {
@@ -785,12 +932,13 @@ onBeforeUnmount(() => {
   background: var(--va-c-bg-soft);
   color: var(--va-c-text);
   font-family: 'Courier New', monospace;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   resize: both;
-  min-height: 300px;
+  min-height: 200px;
   white-space: pre;
   overflow-x: auto;
   overflow-y: auto;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .note-input:focus {
@@ -806,24 +954,28 @@ onBeforeUnmount(() => {
 
 .btn {
   flex: 1;
-  padding: 0.75rem 1.25rem;
+  padding: 0.625rem 1rem;
   border: none;
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  min-width: 120px;
-  min-height: 48px;
+  gap: 0.3125rem;
+  min-height: 44px;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .btn-play {
@@ -832,17 +984,19 @@ onBeforeUnmount(() => {
 }
 
 .btn-play:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(var(--va-c-primary-rgb), 0.3);
+  box-shadow: 0 4px 12px rgba(var(--va-c-primary-rgb), 0.35);
 }
 
+.btn-play.playing {
+  background: var(--va-c-error);
+}
 
 .btn-play.playing:hover:not(:disabled) {
-  box-shadow: 0 2px 8px rgba(var(--va-c-error-rgb), 0.3);
+  box-shadow: 0 4px 12px rgba(var(--va-c-error-rgb), 0.35);
 }
 
 .btn-play .icon {
-  font-size: 1.125rem;
+  font-size: 1rem;
   line-height: 1;
 }
 
@@ -850,22 +1004,21 @@ onBeforeUnmount(() => {
   line-height: 1;
 }
 
-
 .abc-string-row {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .abc-string-container {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .abc-string-container h4 {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--va-c-text-light);
 }
 
@@ -878,14 +1031,14 @@ onBeforeUnmount(() => {
   color: var(--va-c-text-light);
   white-space: pre;
   overflow-x: auto;
-  max-height: 300px;
+  max-height: 200px;
   overflow-y: auto;
 }
 
 .render-row {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .render-container {
@@ -913,6 +1066,98 @@ onBeforeUnmount(() => {
   .btn {
     flex: 1 1 calc(33.333% - 0.375rem);
     min-width: 80px;
+  }
+
+  .options-section {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .option-item {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .tab-bar {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0;
+    border-bottom: none;
+    gap: 0;
+    background: var(--va-c-bg-soft);
+    border-radius: 0.375rem;
+    padding: 0.25rem;
+  }
+
+  .tab-button {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
+    border-radius: 0.25rem;
+  }
+
+  .tab-button.active::after {
+    display: none;
+  }
+
+  .tab-button.active {
+    background: var(--va-c-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .note-section {
+    padding: 0;
+  }
+
+  .note-column {
+    padding: 0.75rem;
+  }
+
+  .note-input {
+    min-height: 160px;
+    font-size: 0.75rem;
+  }
+
+  .abc-string {
+    font-size: 0.6875rem;
+    max-height: 160px;
+  }
+
+  .render-container {
+    padding: 0.5rem;
+    min-height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .any-note {
+    padding: 0.5rem;
+  }
+
+  .btn {
+    min-height: 40px;
+    font-size: 0.8125rem;
+  }
+
+  .btn .text {
+    display: none;
+  }
+
+  .btn .icon {
+    font-size: 1.125rem;
+  }
+
+  .note-input {
+    min-height: 120px;
+    font-size: 0.6875rem;
+  }
+
+  .abc-string-container h4 {
+    font-size: 0.6875rem;
+  }
+
+  .abc-string {
+    max-height: 120px;
+    padding: 0.5rem;
   }
 }
 </style>

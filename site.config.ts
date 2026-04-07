@@ -11,4 +11,13 @@ export default defineSiteConfig({
     enable: false,
     provider: 'fuse',
   },
+   frontmatter: {
+    time_warning: false,
+  },
+
+  codeHeightLimit: 300,
+  vanillaLazyload: {
+    // 默认不开启
+    enable: true,
+  }
 })

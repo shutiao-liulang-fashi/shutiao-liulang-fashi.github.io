@@ -1,8 +1,28 @@
 <template>
   <div class="yueqin-container">
+    <!-- 视图切换按钮 -->
+    <div class="view-toggle">
+      <button
+        class="toggle-btn"
+        :class="{ active: currentView === 'edit' }"
+        @click="currentView = 'edit'"
+      >
+        <span class="toggle-icon">✏️</span>
+        <span class="toggle-text">编辑</span>
+      </button>
+      <button
+        class="toggle-btn"
+        :class="{ active: currentView === 'display' }"
+        @click="currentView = 'display'"
+      >
+        <span class="toggle-icon">🪕</span>
+        <span class="toggle-text">演奏</span>
+      </button>
+    </div>
+
     <div class="yueqin-layout">
-      <!-- 左侧：输入和控制区 -->
-      <div class="control-section">
+      <!-- 编辑区：输入和控制 -->
+      <div v-show="currentView === 'edit'" class="control-section">
         <h2 class="section-title">月琴演奏</h2>
 
         <!-- 选项配置区 -->
@@ -66,14 +86,21 @@
             @input="handleAbcInput"
           />
         </div>
+      </div>
 
+      <!-- 展示区：月琴演奏 -->
+      <div v-show="currentView === 'display'" class="yueqin-display-section">
+        
         <!-- 控制按钮 -->
         <div class="controls">
-          <button @click="play" :disabled="!hasValidAbc || isPlaying" class="btn btn-play">
-            ▶ 播放
-          </button>
-          <button @click="stop" :disabled="!isPlaying" class="btn btn-stop">
-            ⏹ 停止
+          <button
+            class="btn btn-play"
+            :class="{ 'playing': isPlaying }"
+            @click="togglePlayback"
+            :disabled="!hasValidAbc"
+          >
+            <span class="icon">{{ isPlaying ? '⏹' : '▶' }}</span>
+            <span class="text">{{ isPlaying ? '停止' : '播放' }}</span>
           </button>
         </div>
 
@@ -87,10 +114,6 @@
             </span>
           </div>
         </div>
-      </div>
-
-      <!-- 右侧：月琴展示区 -->
-      <div class="yueqin-display-section">
         <div class="yueqin-display">
           <!-- 空弦定调设置 -->
           <div class="tuning-settings">
@@ -266,6 +289,9 @@ let blinkTimeout: number | null = null
 
 // 播放状态
 const isPlaying = ref(false)
+
+// 当前视图：'edit' = 编辑区，'display' = 展示区
+const currentView = ref<'edit' | 'display'>('edit')
 
 // 主播放器实例
 const mainHandler = ref<AbcHandler | null>(null)
@@ -477,6 +503,15 @@ function stop() {
   isPlaying.value = false
   currentNote.value = null
   currentPosition.value = null
+}
+
+// 切换播放/停止
+async function togglePlayback() {
+  if (isPlaying.value) {
+    stop()
+  } else {
+    await play()
+  }
 }
 
 // 播放单个音符
@@ -730,43 +765,99 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 统一使用 CSS 变量 */
 .yueqin-container {
-  padding: 20px;
-  background: #f5f5f5;
-  border-radius: 8px;
+  padding: 1rem;
+  background: var(--va-c-bg-soft);
+  border-radius: 0.5rem;
   min-height: 600px;
 }
 
+/* 视图切换按钮 */
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: var(--va-c-bg);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.625rem 1rem;
+  border: 2px solid var(--va-c-divider);
+  border-radius: 0.375rem;
+  background: var(--va-c-bg);
+  color: var(--va-c-text-light);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  border-color: var(--va-c-primary);
+  color: var(--va-c-primary);
+}
+
+.toggle-btn.active {
+  border-color: var(--va-c-primary);
+  background: rgba(var(--va-c-primary-rgb), 0.1);
+  color: var(--va-c-primary);
+}
+
+.toggle-icon {
+  font-size: 1rem;
+}
+
+.toggle-text {
+  line-height: 1;
+}
+
 .yueqin-layout {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
   height: 100%;
 }
 
 .control-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--va-c-bg);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-
+.section-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--va-c-text);
+}
 
 .options-section {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px;
-  background: #f9fafb;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  gap: 0.5rem;
+  padding: 0.625rem;
+  background: var(--va-c-bg-soft);
+  border-radius: 0.375rem;
+  border: 1px solid var(--va-c-divider);
 }
 
 .option-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex: 1 1 calc(20% - 8px);
+  gap: 0.375rem;
+  flex: 1 1 calc(20% - 0.5rem);
   min-width: 140px;
 }
 
@@ -776,31 +867,31 @@ onUnmounted(() => {
 }
 
 .option-item label {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #666;
+  color: var(--va-c-text-light);
   white-space: nowrap;
 }
 
 .option-value {
   flex: 1;
-  padding: 5px 8px;
-  background: #f3f4f6;
-  border-radius: 4px;
-  color: #374151;
-  font-size: 12px;
+  padding: 0.3125rem 0.5rem;
+  background: var(--va-c-bg-soft);
+  border-radius: 0.25rem;
+  color: var(--va-c-text);
+  font-size: 0.75rem;
   font-family: 'Courier New', monospace;
 }
 
 .option-select,
 .option-input {
   flex: 1;
-  padding: 5px 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  background: white;
-  color: #374151;
-  font-size: 12px;
+  padding: 0.3125rem 0.5rem;
+  border: 1px solid var(--va-c-divider);
+  border-radius: 0.25rem;
+  background: var(--va-c-bg);
+  color: var(--va-c-text);
+  font-size: 0.75rem;
   font-family: 'Courier New', monospace;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -812,71 +903,72 @@ onUnmounted(() => {
 
 .option-select:hover,
 .option-input:hover {
-  border-color: #2196f3;
+  border-color: var(--va-c-primary);
 }
 
 .option-select:focus,
 .option-input:focus {
   outline: none;
-  border-color: #2196f3;
-  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+  border-color: var(--va-c-primary);
+  box-shadow: 0 0 0 2px rgba(var(--va-c-primary-rgb), 0.1);
 }
 
 .input-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .input-label {
-  font-weight: bold;
-  font-size: 14px;
-  color: #333;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--va-c-text);
 }
 
 .abc-textarea {
   width: 100%;
-  min-height: 200px;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  min-height: 150px;
+  padding: 0.75rem;
+  border: 1px solid var(--va-c-divider);
+  border-radius: 0.375rem;
   font-family: 'Courier New', monospace;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
   resize: vertical;
-  background: #fafafa;
+  background: var(--va-c-bg-soft);
+  color: var(--va-c-text);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .abc-textarea:focus {
   outline: none;
-  border-color: #2196f3;
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  border-color: var(--va-c-primary);
+  box-shadow: 0 0 0 3px rgba(var(--va-c-primary-rgb), 0.1);
 }
 
 .controls {
   display: flex;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .btn {
   flex: 1;
-  padding: 10px 15px;
+  padding: 0.625rem 1rem;
   border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: bold;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 0.3125rem;
+  min-height: 44px;
 }
 
 .btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 .btn:active:not(:disabled) {
@@ -890,29 +982,37 @@ onUnmounted(() => {
 }
 
 .btn-play {
-  background: #4caf50;
+  background: var(--va-c-primary);
   color: white;
 }
 
 .btn-play:hover:not(:disabled) {
-  background: #45a049;
+  box-shadow: 0 4px 12px rgba(var(--va-c-primary-rgb), 0.35);
 }
 
-.btn-stop {
-  background: #f44336;
-  color: white;
+.btn-play.playing {
+  background: var(--va-c-error);
 }
 
-.btn-stop:hover:not(:disabled) {
-  background: #d32f2f;
+.btn-play.playing:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(var(--va-c-error-rgb), 0.35);
+}
+
+.btn-play .icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.btn-play .text {
+  line-height: 1;
 }
 
 .current-note-info {
-  background: white;
-  border-radius: 6px;
-  padding: 8px 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  background: var(--va-c-bg);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--va-c-divider);
   min-height: 36px;
   display: flex;
   align-items: center;
@@ -922,123 +1022,131 @@ onUnmounted(() => {
 .note-info-content {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   flex-wrap: nowrap;
   justify-content: center;
   width: 100%;
 }
 
 .note-value {
-  font-size: 16px;
-  font-weight: bold;
-  color: #2196f3;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--va-c-primary);
   min-width: 30px;
   text-align: center;
 }
 
 .note-placeholder {
-  font-size: 14px;
-  color: #9ca3af;
+  font-size: 0.875rem;
+  color: var(--va-c-text-light);
 }
 
 .note-position {
-  font-size: 12px;
-  color: #6b7280;
-  background: #f3f4f6;
-  padding: 2px 8px;
-  border-radius: 3px;
+  font-size: 0.75rem;
+  color: var(--va-c-text-light);
+  background: var(--va-c-bg-soft);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.1875rem;
   white-space: nowrap;
 }
 
 .yueqin-display-section {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--va-c-bg);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   overflow: auto;
 }
 
 .yueqin-display {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.625rem;
   min-height: 400px;
 }
 
-
 .tuning-settings {
-  background: #f5f5f5;
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: var(--va-c-bg-soft);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-
+.tuning-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--va-c-text-light);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
 
 .tuning-inputs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .tuning-input-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .tuning-input-group label {
-  font-size: 11px;
-  font-weight: bold;
-  color: #666;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--va-c-text-light);
   text-align: center;
 }
 
 .tuning-input {
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 0.25rem 0.375rem;
+  border: 1px solid var(--va-c-divider);
+  border-radius: 0.25rem;
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 0.75rem;
   text-align: center;
   transition: border-color 0.2s;
   width: 100%;
   box-sizing: border-box;
+  background: var(--va-c-bg);
+  color: var(--va-c-text);
 }
 
 .tuning-input:focus {
   outline: none;
-  border-color: #2196f3;
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  border-color: var(--va-c-primary);
+  box-shadow: 0 0 0 2px rgba(var(--va-c-primary-rgb), 0.1);
 }
 
 .tuning-input:hover {
-  border-color: #2196f3;
+  border-color: var(--va-c-primary);
 }
 
 .string-labels-top {
   display: flex;
   justify-content: space-around;
-  padding: 5px;
-  margin-bottom: 5px;
+  padding: 0.3125rem;
+  margin-bottom: 0.3125rem;
 }
 
 .string-label {
-  font-weight: bold;
+  font-weight: 600;
   text-align: center;
   min-width: 30px;
-  font-size: 10px;
-  background: #e3f2fd;
-  padding: 3px 8px;
-  border-radius: 4px;
+  font-size: 0.625rem;
+  background: rgba(var(--va-c-primary-rgb), 0.1);
+  color: var(--va-c-primary);
+  padding: 0.1875rem 0.5rem;
+  border-radius: 0.25rem;
 }
 
 .fretboard {
   flex: 1;
-  padding: 6px;
+  padding: 0.375rem;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
   min-height: 0;
   overflow: auto;
 }
@@ -1046,21 +1154,22 @@ onUnmounted(() => {
 .fret-row {
   display: flex;
   align-items: stretch;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .fret-label-side {
-  font-weight: bold;
+  font-weight: 600;
   text-align: center;
-  padding: 0 8px;
+  padding: 0 0.5rem;
   min-width: 25px;
   height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f0f0f0;
-  border-radius: 4px;
-  font-size: 10px;
+  background: var(--va-c-bg-soft);
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  color: var(--va-c-text-light);
   flex-shrink: 0;
 }
 
@@ -1068,36 +1177,38 @@ onUnmounted(() => {
   flex: 1;
   min-width: 20px;
   height: 24px;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  background: var(--va-c-bg);
+  border: 1px solid var(--va-c-divider);
+  border-radius: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   position: relative;
   transition: all 0.2s;
-  font-size: 10px;
+  font-size: 0.625rem;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .fret::before {
   content: attr(data-note);
   position: absolute;
-  font-size: 10px;
-  color: #999;
+  font-size: 0.625rem;
+  color: var(--va-c-text-light);
   opacity: 0.5;
   pointer-events: none;
 }
 
 .fret.fret-0 {
-  font-weight: bold;
-  background: #fff3e0;
-  border-color: #ff9800;
+  font-weight: 600;
+  background: rgba(var(--va-c-warning-rgb, 255, 152, 0), 0.1);
+  border-color: var(--va-c-warning, #ff9800);
 }
 
 .fret.is-current {
-  background: #fffde7;
-  border-color: #ff9800;
+  background: rgba(var(--va-c-warning-rgb, 255, 152, 0), 0.05);
+  border-color: var(--va-c-warning, #ff9800);
 }
 
 .fret.is-current .indicator-dot {
@@ -1106,14 +1217,14 @@ onUnmounted(() => {
   left: 2px;
   width: 8px;
   height: 8px;
-  background: #ff9800;
+  background: var(--va-c-warning, #ff9800);
   border-radius: 50%;
   box-shadow: 0 0 4px rgba(255, 152, 0, 0.6);
 }
 
 .note-display {
-  font-size: 10px;
-  font-weight: bold;
+  font-size: 0.625rem;
+  font-weight: 600;
   z-index: 1;
   position: absolute;
   opacity: 1;
@@ -1121,13 +1232,199 @@ onUnmounted(() => {
 }
 
 /* 响应式设计 */
-@media (max-width: 1024px) {
-  .yueqin-layout {
-    grid-template-columns: 1fr;
+@media (max-width: 768px) {
+  .yueqin-container {
+    padding: 0.625rem;
+    min-height: auto;
   }
 
-  .yueqin-display-section {
-    min-height: 500px;
+  .options-section {
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 0.5rem;
+  }
+
+  .option-item {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .option-item label {
+    font-size: 0.6875rem;
+    min-width: 60px;
+  }
+
+  .abc-textarea {
+    min-height: 120px;
+    font-size: 0.75rem;
+  }
+
+  .controls {
+    gap: 0.5rem;
+  }
+
+  .btn {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+    min-height: 44px;
+  }
+
+  .tuning-inputs {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.375rem;
+  }
+
+  .tuning-input-group label {
+    font-size: 0.625rem;
+  }
+
+  .tuning-input {
+    font-size: 0.6875rem;
+    padding: 0.25rem;
+  }
+
+  .string-label {
+    font-size: 0.5625rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .fret-label-side {
+    min-width: 20px;
+    font-size: 0.5625rem;
+    padding: 0 0.25rem;
+  }
+
+  .fret {
+    min-width: 16px;
+    height: 20px;
+  }
+
+  .fret::before {
+    font-size: 0.5rem;
+  }
+
+  .note-display {
+    font-size: 0.5rem;
+  }
+
+  .fret.is-current .indicator-dot {
+    width: 6px;
+    height: 6px;
+    bottom: 1px;
+    left: 1px;
+  }
+
+  .note-value {
+    font-size: 0.875rem;
+  }
+
+  .note-position {
+    font-size: 0.6875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .yueqin-container {
+    padding: 0.5rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .options-section {
+    padding: 0.375rem;
+  }
+
+  .option-item {
+    gap: 0.25rem;
+  }
+
+  .option-item label {
+    font-size: 0.625rem;
+    min-width: 50px;
+  }
+
+  .option-select {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.375rem;
+  }
+
+  .input-label {
+    font-size: 0.75rem;
+  }
+
+  .abc-textarea {
+    min-height: 100px;
+    font-size: 0.6875rem;
+    padding: 0.5rem;
+  }
+
+  .btn {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.625rem;
+  }
+
+  .tuning-settings {
+    padding: 0.5rem;
+  }
+
+  .tuning-title {
+    font-size: 0.75rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .fretboard {
+    padding: 0.25rem;
+    gap: 0.25rem;
+  }
+
+  .fret-row {
+    gap: 0.25rem;
+  }
+
+  .fret {
+    min-width: 14px;
+    height: 18px;
+    border-radius: 0.1875rem;
+  }
+
+  .fret::before {
+    font-size: 0.4375rem;
+  }
+
+  .note-display {
+    font-size: 0.4375rem;
+  }
+
+  .fret-label-side {
+    min-width: 16px;
+    font-size: 0.5rem;
+    padding: 0 0.125rem;
+  }
+
+  .string-label {
+    font-size: 0.5rem;
+    padding: 0.125rem 0.25rem;
+  }
+
+  .string-labels-top {
+    padding: 0.1875rem;
+    margin-bottom: 0.1875rem;
+  }
+
+  .current-note-info {
+    padding: 0.375rem 0.625rem;
+    min-height: 32px;
+  }
+
+  .note-value {
+    font-size: 0.8125rem;
+  }
+
+  .note-position {
+    font-size: 0.625rem;
+    padding: 0.0625rem 0.375rem;
   }
 }
 </style>

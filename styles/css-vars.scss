@@ -1,1 +1,9 @@
 // you can custom css vars here
+
+// 错误/警告颜色（用于播放停止等状态）
+:root {
+  --va-c-error: #e53935;
+  --va-c-error-rgb: 229, 57, 53;
+  --va-c-warning: #ff9800;
+  --va-c-warning-rgb: 255, 152, 0;
+}

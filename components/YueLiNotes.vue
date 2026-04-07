@@ -113,7 +113,7 @@ const abcString = computed(() => {
 const isPlaying = ref(false)
 
 // 当前显示的视图（音符信息或五线谱）
-const currentView = ref<'notes' | 'sheet-music'>('notes')
+const currentView = ref<'notes' | 'sheet-music'>('sheet-music')
 
 // 是否需要显示切换按钮（音符信息和五线谱都存在时）
 const showToggleButton = computed(() => {
@@ -306,15 +306,137 @@ function toggleView() {
 }
 
 .play-control-section {
-  position: absolute;
-  z-index: 1;
-  top: 1rem;
-  right: 1rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.5rem;
+  gap: 0.5rem;
+  padding: 0.75rem;
   border-radius: 0.5rem;
+  background: var(--va-c-bg-soft, #f5f5f5);
+  flex-wrap: wrap;
+}
+
+.play-stop-button {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--va-c-border);
+  border-radius: 0.375rem;
+  color: var(--va-c-text);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+  max-width: 160px;
+}
+
+.play-stop-button:hover:not(:disabled) {
+  border-color: var(--va-c-primary);
+  background: var(--va-c-primary-soft);
+  color: var(--va-c-primary);
+}
+
+.play-stop-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.play-stop-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.play-stop-button.playing {
+  border-color: var(--va-c-error);
+  background: var(--va-c-error-soft);
+  color: var(--va-c-error);
+}
+
+.play-stop-button.playing:hover:not(:disabled) {
+  background: var(--va-c-error-bg);
+  color: var(--va-c-error);
+}
+
+.play-stop-button .icon {
+  font-size: 0.875rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.play-stop-button .text {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* 切换视图按钮样式 */
+.toggle-view-button {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--va-c-border);
+  border-radius: 0.375rem;
+  background: var(--va-c-bg);
+  color: var(--va-c-text);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+  max-width: 180px;
+}
+
+.toggle-view-button:hover {
+  border-color: var(--va-c-primary);
+  background: var(--va-c-primary-soft);
+  color: var(--va-c-primary);
+}
+
+.toggle-view-button:active {
+  transform: translateY(1px);
+}
+
+.toggle-view-button .icon {
+  font-size: 0.875rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.toggle-view-button .text {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .play-control-section {
+    padding: 0.5rem;
+    gap: 0.375rem;
+  }
+
+  .play-stop-button,
+  .toggle-view-button {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
+    gap: 0.25rem;
+  }
+
+  .play-stop-button .text {
+    display: none;
+  }
+
+  .toggle-view-button .text {
+    display: none;
+  }
+
+  .play-stop-button,
+  .toggle-view-button {
+    min-height: 40px;
+    max-width: 48px;
+  }
 }
 
 .note-info {
@@ -337,8 +459,8 @@ function toggleView() {
   border-radius: 0.5rem;
   color: var(--va-c-text);
   font-family: 'Courier New', monospace;
-  white-space: pre-wrap; /* 保留换行符和空格 */
-  word-break: break-all; /* 允许在任意字符间断行 */
+  white-space: pre-wrap;
+  word-break: break-all;
   overflow-x: auto;
   overflow-y: auto;
 }
@@ -347,19 +469,6 @@ function toggleView() {
   margin: 0;
   padding: 0;
   font-family: inherit;
-}
-
-.header-indicator {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  color: var(--va-c-success);
-  font-weight: 500;
-  border-radius: 0.25rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 10;
 }
 
 .error-message {
@@ -401,96 +510,5 @@ function toggleView() {
 
 .abc-render-container :deep(.abcjs-system) {
   width: 100% !important;
-}
-
-/* 播放/停止切换按钮样式 */
-.play-stop-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  border: 1px solid var(--va-c-border);
-  border-radius: 0.375rem;
-  color: var(--va-c-text);
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  min-width: 100px;
-  justify-content: center;
-}
-
-.play-stop-button:hover:not(:disabled) {
-  border-color: var(--va-c-primary);
-  background: var(--va-c-primary-soft);
-  color: var(--va-c-primary);
-}
-
-.play-stop-button:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.play-stop-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.play-stop-button.playing {
-  border-color: var(--va-c-error);
-  background: var(--va-c-error-soft);
-  color: var(--va-c-error);
-}
-
-.play-stop-button.playing:hover:not(:disabled) {
-  background: var(--va-c-error-bg);
-  color: var(--va-c-error);
-}
-
-.play-stop-button .icon {
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.play-stop-button .text {
-  line-height: 1;
-}
-
-/* 切换视图按钮样式 */
-.toggle-view-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  border: 1px solid var(--va-c-border);
-  border-radius: 0.375rem;
-  background: var(--va-c-bg);
-  color: var(--va-c-text);
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  min-width: 140px;
-  justify-content: center;
-}
-
-.toggle-view-button:hover {
-  border-color: var(--va-c-primary);
-  background: var(--va-c-primary-soft);
-  color: var(--va-c-primary);
-}
-
-.toggle-view-button:active {
-  transform: translateY(1px);
-}
-
-.toggle-view-button .icon {
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.toggle-view-button .text {
-  line-height: 1;
 }
 </style>

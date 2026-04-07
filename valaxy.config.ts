@@ -12,12 +12,16 @@ const sidebar = [
     collapsed: false,
     items: [
       {
-        text: '四种记谱法',
+        text: '五线谱',
+        link: '/1_yueli/0_staff/',
+      },
+      {
+        text: '五种记谱法详解',
         link: '/1_yueli/1_pu/',
       },
       {
         text: '乐理游乐场',
-        link: '/1_yueli/2_playground/',
+        link: '/1_yueli/999_playground/',
       },
     ]
   },
@@ -38,4 +42,5 @@ export default defineValaxyConfig({
     },
   },
   unocss: {},
+  devtools: false
 })

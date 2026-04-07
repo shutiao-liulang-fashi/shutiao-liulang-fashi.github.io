@@ -29,8 +29,8 @@ export interface CursorControl {
  * AbcHandler 配置选项
  */
 export interface AbcHandlerOptions {
-  /** ABC 字符串（必需） */
-  abcString: string
+  /** ABC 字符串（播放/渲染模式下必需） */
+  abcString?: string
 
   /** 是否启用播放功能，默认为 false */
   enablePlayback?: boolean
@@ -149,7 +149,7 @@ export class AbcHandler {
 
 
 
-    this.currentAbcString = abcString
+    this.currentAbcString = abcString || ''
     this.enablePlayback = enablePlayback
     this.enableRender = enableRender
     this.volume = Math.max(0, Math.min(1, volume))
@@ -157,7 +157,7 @@ export class AbcHandler {
     this.soundFontUrl = soundFontUrl
     this.cursorControlOptions = cursorControl
     this.renderOptions = renderOptions
-    this.showTitle = showTitle !== undefined ? showTitle : this.hasTitleInAbc(abcString)
+    this.showTitle = showTitle !== undefined ? showTitle : this.hasTitleInAbc(abcString || '')
     this.onPlayCallback = onPlay
     this.onStopCallback = onStop
 
@@ -627,43 +627,44 @@ export class AbcHandler {
     this.noteElements = []
   }
 
-  /**
-   * 销毁处理器，释放资源
-   */
-  dispose(): void {
-    // 停止播放
-    this.stop()
+/**
+ * 销毁处理器，释放资源
+ */
+dispose(): void {
+  // 停止播放
+  this.stop()
 
-    // 销毁音频上下文
-    if (this.audioContext) {
-      try {
-        if (this.audioContext.state !== 'closed') {
-          this.audioContext.close()
-        }
-      } catch (error) {
-        console.error('关闭 AudioContext 时出错:', error)
+  // 销毁音频上下文
+  if (this.audioContext) {
+    try {
+      if (this.audioContext.state !== 'closed') {
+        this.audioContext.close()
       }
-      this.audioContext = null
+    } catch (error) {
+      console.error('关闭 AudioContext 时出错:', error)
     }
-
-    // 移除隐藏容器
-    if (this.hiddenContainer && this.hiddenContainer.parentNode) {
-      this.hiddenContainer.parentNode.removeChild(this.hiddenContainer)
-      this.hiddenContainer = null
-    }
-
-    // 禁用响应式
-    this.disableResponsive()
-
-    // 清空容器
-    this.clear()
-
-    // 清空引用
-    this.container = null
-    this.visualObj = null
-    this.noteElements = []
-    this.onPlayCallback = undefined
-    this.onStopCallback = undefined
-    this.cursorControlOptions = undefined
+    this.audioContext = null
   }
+
+  // 移除隐藏容器
+  if (this.hiddenContainer && this.hiddenContainer.parentNode) {
+    this.hiddenContainer.parentNode.removeChild(this.hiddenContainer)
+    this.hiddenContainer = null
+  }
+
+  // 禁用响应式
+  this.disableResponsive()
+
+  // 清空容器
+  this.clear()
+
+  // 清空引用
+  this.container = null
+  this.visualObj = null
+  this.noteElements = []
+  this.onPlayCallback = undefined
+  this.onStopCallback = undefined
+  this.cursorControlOptions = undefined
+}
+
 }
