@@ -7,7 +7,7 @@
     "build": "npm run update:sidebar && npm run build:ssg",
     "build:spa": "npm run update:sidebar && valaxy build",
     "build:ssg": "npm run update:sidebar && valaxy build --ssg",
-    "dev": "npm run update:sidebar && valaxy",
+    "start:dev": "npm run update:sidebar && valaxy",
     "rss": "npm run update:sidebar && valaxy rss",
     "serve": "npm run update:sidebar && vite preview",
     "update:sidebar": "node scripts/update-sidebar.cjs"

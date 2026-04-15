@@ -7,6 +7,7 @@ export default defineSiteConfig({
   description: '薯条流浪法师的个人小屋',
   lastUpdated: true,
   timezone: 'Asia/Shanghai',
+  favicon: '/favicon.jpg',
   search: {
     enable: false,
     provider: 'fuse',

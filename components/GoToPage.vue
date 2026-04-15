@@ -16,49 +16,14 @@ const loadingStatus = ref('加载中...')
 onMounted(() => {
   // 保存当前页面的 title
   const originalTitle = document.title
-
-  // 阶段 1: DOMContentLoaded
-  const handleDOMContentLoaded = () => {
-    loadingStatus.value = '发呆中...'
-  }
-
-  // 阶段 2: 资源加载完成
-  const handleLoad = () => {
-    // 模拟一些异步操作
-    setTimeout(() => {
-      setTimeout(() => {
-        setTimeout(() => {
-          // 使用 Vue Router 跳转
-          router.push(props.targetUrl)
-          window.document.title = originalTitle
-        }, 300)
-      }, 200)
-    }, 300)
-  }
-
-  // 监听 DOMContentLoaded
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', handleDOMContentLoaded)
-  } else {
-    handleDOMContentLoaded()
-  }
-
-  // 监听 window.load
-  if (document.readyState === 'complete') {
-    handleLoad()
-  } else {
-    window.addEventListener('load', handleLoad)
-  }
-
   // 安全超时：如果加载太慢，强制跳转
   setTimeout(() => {
-    loadingStatus.value = '超时跳转...'
+    loadingStatus.value = '发呆中...'
     setTimeout(() => {
-      // 使用 Vue Router 跳转
       router.push(props.targetUrl)
       window.document.title = originalTitle
     }, 300)
-  }, 5000) // 5秒超时
+  }, 2000) // 2 秒自动跳转
 })
 </script>
 

@@ -1,5 +1,5 @@
 // you can custom css here
-@import './css-vars.scss';
+@use './css-vars.scss';
 
 .abcjs-container {
   position: fixed !important;
@@ -10,7 +10,10 @@
   z-index: -1 !important;
 }
 
-.abc-svg-container.abcjs-container {
+.abc-svg-container.abcjs-container,
+.abc-render-container.abcjs-container,
+.render-container.abcjs-container 
+{
   position: relative  !important;
   left: 0px !important;
   top: 0px !important;
@@ -20,27 +23,6 @@
   visibility: visible !important;
   z-index: 0 !important;
 }
-.abc-render-container.abcjs-container {
-  position: relative  !important;
-  left: 0px !important;
-  top: 0px !important;
-  width: 100% !important;
-  height: auto !important;
-  overflow: auto !important;
-  visibility: visible !important;
-  z-index: 0 !important;
-}
-.render-container.abcjs-container {
-  position: relative  !important;
-  left: 0px !important;
-  top: 0px !important;
-  width: 100% !important;
-  height: auto !important;
-  overflow: auto !important;
-  visibility: visible !important;
-  z-index: 0 !important;
-}
-
 
 @media screen and (max-width: 640px) {
     .press-sidebar {
