@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html  lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.jpg">
+    <script>
+    ;(function () {
+      const prefersDark =
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches
+      const setting = localStorage.getItem('vueuse-color-scheme') || 'auto'
+      if (setting === 'dark' || (prefersDark && setting !== 'light'))
+        document.documentElement.classList.toggle('dark', true)
+    })()
+    </script>
+  <style type="text/css">
+    :root { color-scheme: light dark; --va-c-bg: #fff; }
+    html.dark { --va-c-bg: #000; }
+    html { background-color: var(--va-c-bg); }
+  </style><style id="valaxy-fouc">body{opacity:0!important}</style><style>body{transition:opacity .15s ease}</style><noscript><style>body{opacity:1!important}</style></noscript><script>(function foucGuardScript(maxDuration) {
+  var done = 0;
+  function reveal() {
+    if (done) return;
+    done = 1;
+    var s = document.getElementById("valaxy-fouc");
+    if (s) s.remove();
+  }
+  function check() {
+    var links = document.querySelectorAll('link[rel="stylesheet"]');
+    for (var i = 0; i < links.length; i++) {
+      if (!links[i].sheet) return;
+    }
+    reveal();
+  }
+  new MutationObserver(check).observe(document.head, {
+    childList: true,
+    attributes: true,
+    attributeFilter: ["media", "rel"]
+  });
+  addEventListener("load", reveal);
+  if (maxDuration)
+    setTimeout(reveal, maxDuration);
+})(5000)</script>
+    <script>
+    const locale = localStorage.getItem('valaxy-locale') || 'zh-CN';
+    document.documentElement.setAttribute('lang', locale);
+    </script>
+    
+  <script type="module" crossorigin src="/assets/index.COktBTgQ.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime.CYVBeYYp.js">
+  <link rel="modulepreload" crossorigin href="/assets/framework.BQkCPPpt.js">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/vue-i18n.C6P6SZVd.js">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/dayjs.DwLr60RS.js">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/pinia.CBMfP437.js">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/vue-router.D2T-PsNg.js">
+  <link rel="modulepreload" crossorigin href="/assets/theme.BuExpjjx.js">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/nprogress.D5yedX_s.js">
+  <link rel="stylesheet" crossorigin href="/assets/style.C7rJSSz5.css">
+<link rel="preload" href="/assets/KaTeX_AMS-Regular.BQhdFMY1.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_AMS-Regular.DMm9YOAa.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Caligraphic-Bold.Dq_IR9rO.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Caligraphic-Bold.BEiXGLvX.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Caligraphic-Regular.Di6jR-x-.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Caligraphic-Regular.CTRA-rTL.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Fraktur-Bold.CL6g_b3V.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Fraktur-Bold.BsDP51OF.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Fraktur-Regular.CTYiF6lA.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Fraktur-Regular.Dxdc4cR9.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Bold.Cx986IdX.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Bold.Jm3AIy58.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-BoldItalic.DxDJ3AOS.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-BoldItalic.SpSLRI95.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Italic.NWA7e6Wa.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Italic.BMLOBm91.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Regular.B22Nviop.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Regular.Dr94JaBh.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Math-BoldItalic.CZnvNsCZ.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Math-BoldItalic.iY-2wyZ7.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Math-Italic.t53AETM-.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Math-Italic.DA0__PXp.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Bold.D1sUS0GD.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Bold.DbIhKOiC.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Italic.C3H0VqGB.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Italic.DN2j7dab.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Regular.DDBCnlJ7.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Regular.CS6fqUqJ.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Script-Regular.D3wIWfF6.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Script-Regular.D5yQViql.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size1-Regular.mCD8mA8B.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size1-Regular.C195tn64.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size2-Regular.Dy4dx90m.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size2-Regular.oD1tc_U0.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size3-Regular.CTq5MqoE.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size4-Regular.Dl5lxZxV.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size4-Regular.BF-4gkZK.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Typewriter-Regular.CO6r4hn1.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Typewriter-Regular.C0xS9mPB.woff" as="font" type="font/woff" crossorigin>
+<link rel="modulepreload" crossorigin href="/assets/theme.BuExpjjx.js">
+<link rel="preload" href="/assets/valaxy-logo.DPa8-qbg.png" as="image">
+<link rel="modulepreload" crossorigin href="/assets/pages.D-vxwZJz.js">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>薯条流浪法师</title>
+<meta property="og:locale:alternate" content="en">
+<meta name="description" content="薯条流浪法师的个人小屋">
+<meta property="og:description" content="薯条流浪法师的个人小屋">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:site_name" content="薯条流浪法师">
+<meta property="og:title" content="薯条流浪法师">
+<meta property="og:image" content="/favicon.jpg">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sutiao-liulang-fashi.github.io/">
+<link rel="icon" href="/favicon.jpg" type="image/png">
+<meta name="generator" content="Valaxy 0.28.1">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+  <div id="app"><!--[--><!--[--><!----><!--[--><!--]--><!----><!--]--><div class="layout antialiased"><nav w="full" class="press-nav relative md:fixed md:z-99 font-bold no-sidebar"><div class="pr-navbar flex justify-between items-center pl-4 pr-2"><a aria-current="page" href="/" class="router-link-active router-link-exact-active text-xl flex justify-center items-center font-black gradient-text from-purple-800 to-blue-500 bg-gradient-to-r" aria-label="薯条流浪法师"><!--v-if--><span class="inline-flex">薯条流浪法师</span></a><div class="self-stretch flex justify-center items-center text-sm leading-5"><!----><div class="flex lt-md:hidden" h="full" p="x-2"><!--[--><!--]--></div><div class="flex items-center lt-lg:hidden" h="full" p="x-2"><!--[--><!-- Flyout mode: reuse PressNavItemGroup dropdown pattern --><!--[--><!-- Legacy toggle mode: no locales config --><button title="切换语言" data-v-5831e873><div i-ri-translate class="transition transform" data-v-5831e873></div></button><!--]--><!--]--></div><div class="inline-flex items-center lt-lg:hidden" p="x-2"><button class="switch switch-appearance" type="button" aria-label="Toggle Dark Mode" data-v-04afd0f3><span class="check" data-v-04afd0f3><span class="icon-wrap" data-v-04afd0f3><div class="icon" i-ri-sun-line data-v-04afd0f3></div></span></span></button></div><div class="pr-social-links pr-nav-bar-social-links" p="x-2" data-v-4030dd5a data-v-1cadd8e1><!--[--><!--]--></div><button type="button" class="pr-NavBarHamburger" aria-label="mobile navigation" aria-expanded="false" aria-controls="pr-NavScreen" data-v-d4e74285><span class="container" data-v-d4e74285><span class="top" data-v-d4e74285></span><span class="middle" data-v-d4e74285></span><span class="bottom" data-v-d4e74285></span></span></button></div></div><!----></nav><!----><!--[--><!----><!--]--><!----><!--[--><div class="press-home" style="--va-code-mobile-margin-x:0;"><!--[--><!--]--><!----><!--[--><!--]--><!--[--><!--]--><!----><!--[--><!--]--><!--[--><main class="press-main flex" data-v-5431fe00><div w="full" flex="~" class="relative" p="t-4" data-v-5431fe00><div class="container" flex="~ grow" justify="between" data-v-5431fe00><!--[--><div w="full" class="m-auto vp-doc content" flex="~ col grow" p="lt-md:0" data-v-5431fe00><!--[--><!--]--><!--[--><!--]--><!--[--><!--[--><!--]--><article class="markdown-body mx-auto w-full max-w-4xl" data-v-5431fe00><!--[--><!----><!--[--><div class="goto-page" data-v-683db526><div class="loader" data-v-683db526><div class="quote" data-v-683db526><span class="word" data-v-683db526>The</span><span class="word" data-v-683db526>world</span><span class="word" data-v-683db526>is</span><span class="word" data-v-683db526>not</span><span class="word" data-v-683db526>beautiful.</span><br data-v-683db526><span class="word" data-v-683db526>Therefore,</span><span class="word" data-v-683db526>it</span><span class="word" data-v-683db526>is.</span><br data-v-683db526><span class="author" data-v-683db526>-《奇诺之旅》</span></div><p class="loading-text" data-v-683db526>加载中...</p></div></div><!--]--><!--[--><!--]--><!--]--><!----><!----></article><!--[--><!--]--><!----><!--]--></div><!--[--><!--]--><!--[--><!--]--><!--[--><!--]--><!----><!--[--><!--]--><!--]--><!--[--><!----><!--]--></div></div></main><!--]--></div><!--]--><footer class="press-footer" data-v-8934a884><div flex="~ col" class="container" data-v-8934a884><p class="message" data-v-8934a884>Powered by <a href="https://valaxy.site">Valaxy</a></p><!----></div></footer></div><!--]--></div><script>window.__INITIAL_STATE__='{"pinia":{"app":{"showLoading":true},"routerStore":{}}}'</script><script type="application/ld+json" data-hid="schema-org-graph">{"@context":"https://schema.org","@graph":[{"@id":"https://sutiao-liulang-fashi.github.io/#identity","@type":"Person","name":"VALAXY Developer","url":"https://sutiao-liulang-fashi.github.io/","image":{"@id":"https://sutiao-liulang-fashi.github.io/#/schema/image/1"},"sameAs":[]},{"@id":"https://sutiao-liulang-fashi.github.io/#website","@type":"WebSite","dateModified":"2026-04-15T02:12:23.501Z","datePublished":"2026-04-15T02:12:23.501Z","inLanguage":"zh-CN","url":"https://sutiao-liulang-fashi.github.io/","publisher":{"@id":"https://sutiao-liulang-fashi.github.io/#identity"}},{"@id":"https://sutiao-liulang-fashi.github.io/#webpage","@type":"WebPage","description":"薯条流浪法师的个人小屋","url":"https://sutiao-liulang-fashi.github.io/","about":{"@id":"https://sutiao-liulang-fashi.github.io/#identity"},"isPartOf":{"@id":"https://sutiao-liulang-fashi.github.io/#website"},"potentialAction":[{"@type":"ReadAction","target":["https://sutiao-liulang-fashi.github.io/"]}]},{"@id":"https://sutiao-liulang-fashi.github.io/#/schema/image/1","@type":"ImageObject","contentUrl":"https://valaxy.site/valaxy-logo.png","inLanguage":"zh-CN","url":"https://valaxy.site/valaxy-logo.png"}]}</script>
+  
+</body>
+</html>

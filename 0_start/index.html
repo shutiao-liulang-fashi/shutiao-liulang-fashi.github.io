@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html  lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.jpg">
+    <script>
+    ;(function () {
+      const prefersDark =
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches
+      const setting = localStorage.getItem('vueuse-color-scheme') || 'auto'
+      if (setting === 'dark' || (prefersDark && setting !== 'light'))
+        document.documentElement.classList.toggle('dark', true)
+    })()
+    </script>
+  <style type="text/css">
+    :root { color-scheme: light dark; --va-c-bg: #fff; }
+    html.dark { --va-c-bg: #000; }
+    html { background-color: var(--va-c-bg); }
+  </style><style id="valaxy-fouc">body{opacity:0!important}</style><style>body{transition:opacity .15s ease}</style><noscript><style>body{opacity:1!important}</style></noscript><script>(function foucGuardScript(maxDuration) {
+  var done = 0;
+  function reveal() {
+    if (done) return;
+    done = 1;
+    var s = document.getElementById("valaxy-fouc");
+    if (s) s.remove();
+  }
+  function check() {
+    var links = document.querySelectorAll('link[rel="stylesheet"]');
+    for (var i = 0; i < links.length; i++) {
+      if (!links[i].sheet) return;
+    }
+    reveal();
+  }
+  new MutationObserver(check).observe(document.head, {
+    childList: true,
+    attributes: true,
+    attributeFilter: ["media", "rel"]
+  });
+  addEventListener("load", reveal);
+  if (maxDuration)
+    setTimeout(reveal, maxDuration);
+})(5000)</script>
+    <script>
+    const locale = localStorage.getItem('valaxy-locale') || 'zh-CN';
+    document.documentElement.setAttribute('lang', locale);
+    </script>
+    
+  <script type="module" crossorigin src="/assets/index.COktBTgQ.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime.CYVBeYYp.js">
+  <link rel="modulepreload" crossorigin href="/assets/framework.BQkCPPpt.js">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/vue-i18n.C6P6SZVd.js">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/dayjs.DwLr60RS.js">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/pinia.CBMfP437.js">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/vue-router.D2T-PsNg.js">
+  <link rel="modulepreload" crossorigin href="/assets/theme.BuExpjjx.js">
+  <link rel="modulepreload" crossorigin href="/assets/chunks/nprogress.D5yedX_s.js">
+  <link rel="stylesheet" crossorigin href="/assets/style.C7rJSSz5.css">
+<link rel="preload" href="/assets/KaTeX_AMS-Regular.BQhdFMY1.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_AMS-Regular.DMm9YOAa.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Caligraphic-Bold.Dq_IR9rO.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Caligraphic-Bold.BEiXGLvX.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Caligraphic-Regular.Di6jR-x-.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Caligraphic-Regular.CTRA-rTL.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Fraktur-Bold.CL6g_b3V.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Fraktur-Bold.BsDP51OF.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Fraktur-Regular.CTYiF6lA.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Fraktur-Regular.Dxdc4cR9.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Bold.Cx986IdX.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Bold.Jm3AIy58.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-BoldItalic.DxDJ3AOS.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-BoldItalic.SpSLRI95.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Italic.NWA7e6Wa.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Italic.BMLOBm91.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Regular.B22Nviop.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Main-Regular.Dr94JaBh.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Math-BoldItalic.CZnvNsCZ.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Math-BoldItalic.iY-2wyZ7.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Math-Italic.t53AETM-.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Math-Italic.DA0__PXp.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Bold.D1sUS0GD.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Bold.DbIhKOiC.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Italic.C3H0VqGB.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Italic.DN2j7dab.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Regular.DDBCnlJ7.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_SansSerif-Regular.CS6fqUqJ.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Script-Regular.D3wIWfF6.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Script-Regular.D5yQViql.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size1-Regular.mCD8mA8B.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size1-Regular.C195tn64.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size2-Regular.Dy4dx90m.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size2-Regular.oD1tc_U0.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size3-Regular.CTq5MqoE.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size4-Regular.Dl5lxZxV.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Size4-Regular.BF-4gkZK.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Typewriter-Regular.CO6r4hn1.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/KaTeX_Typewriter-Regular.C0xS9mPB.woff" as="font" type="font/woff" crossorigin>
+<link rel="modulepreload" crossorigin href="/assets/theme.BuExpjjx.js">
+<link rel="preload" href="/assets/valaxy-logo.DPa8-qbg.png" as="image">
+<link rel="modulepreload" crossorigin href="/assets/0_start.Ct3JKn0B.js">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开始 - 薯条流浪法师</title>
+<meta property="og:locale:alternate" content="en">
+<meta name="description" content="薯条流浪法师的个人小屋">
+<meta property="og:description" content="薯条流浪法师的个人小屋">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:site_name" content="薯条流浪法师">
+<meta property="og:title" content="开始">
+<meta property="og:image" content="/favicon.jpg">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sutiao-liulang-fashi.github.io/">
+<link rel="icon" href="/favicon.jpg" type="image/png">
+<meta name="generator" content="Valaxy 0.28.1">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+  <div id="app"><!--[--><!--[--><!----><!--[--><!--]--><!----><!--]--><div class="layout antialiased"><nav w="full" class="press-nav relative md:fixed md:z-99 font-bold"><div class="pr-navbar flex justify-between items-center pl-4 pr-2 has-sidebar"><a href="/" class="text-xl flex justify-center items-center font-black gradient-text from-purple-800 to-blue-500 bg-gradient-to-r" aria-label="薯条流浪法师"><!--v-if--><span class="inline-flex">薯条流浪法师</span></a><div class="self-stretch flex justify-center items-center text-sm leading-5"><!----><div class="flex lt-md:hidden" h="full" p="x-2"><!--[--><!--]--></div><div class="flex items-center lt-lg:hidden" h="full" p="x-2"><!--[--><!-- Flyout mode: reuse PressNavItemGroup dropdown pattern --><!--[--><!-- Legacy toggle mode: no locales config --><button title="切换语言" data-v-5831e873><div i-ri-translate class="transition transform" data-v-5831e873></div></button><!--]--><!--]--></div><div class="inline-flex items-center lt-lg:hidden" p="x-2"><button class="switch switch-appearance" type="button" aria-label="Toggle Dark Mode" data-v-04afd0f3><span class="check" data-v-04afd0f3><span class="icon-wrap" data-v-04afd0f3><div class="icon" i-ri-sun-line data-v-04afd0f3></div></span></span></button></div><div class="pr-social-links pr-nav-bar-social-links" p="x-2" data-v-4030dd5a data-v-1cadd8e1><!--[--><!--]--></div><button type="button" class="pr-NavBarHamburger" aria-label="mobile navigation" aria-expanded="false" aria-controls="pr-NavScreen" data-v-d4e74285><span class="container" data-v-d4e74285><span class="top" data-v-d4e74285></span><span class="middle" data-v-d4e74285></span><span class="bottom" data-v-d4e74285></span></span></button></div></div><!----></nav><div class="press-local-nav" data-v-63d2c50c><button class="menu" aria-expanded="false" aria-controls="pr-sidebar-nav" data-v-63d2c50c><div i-ri-align-left class="menu-icon" data-v-63d2c50c></div><span class="menu-text" data-v-63d2c50c>菜单</span></button><div class="VPLocalNavOutlineDropdown" style="--vp-vh:0px;" data-v-63d2c50c data-v-84c26161><button data-v-84c26161>返回顶部</button><!----></div></div><!--[--><aside class="press-sidebar shadow-lg"><div text="left" m="2"><!--[--><ul class="category-list"><div class="VPSidebarItem level-0 is-link" p="t-2" border="t t-$pr-c-divider-light" data-v-a8031b1b><div class="press-sidebar-item item" data-v-a8031b1b><div class="indicator" data-v-a8031b1b></div><a aria-current="page" href="/0_start/" class="router-link-active router-link-exact-active va-link link" tag="a" data-v-a8031b1b><!--[--><!-- eslint-disable-next-line vue/no-v-text-v-html-on-component --><p class="text ml-1" data-v-a8031b1b>开始</p><!--]--></a><!--v-if--></div><!--v-if--></div></ul><ul class="category-list"><section class="VPSidebarItem level-0 collapsible is-link" p="t-2" border="t t-$pr-c-divider-light" data-v-a8031b1b><div class="press-sidebar-item item" tabindex="0" data-v-a8031b1b><div class="indicator" data-v-a8031b1b></div><a href="/1_yueli/" class="va-link link" tag="a" data-v-a8031b1b><!--[--><!-- eslint-disable-next-line vue/no-v-text-v-html-on-component --><h2 class="text ml-1" data-v-a8031b1b>乐理</h2><!--]--></a><button tabindex="0" role="button" aria-label="toggle section" class="caret folder-action inline-flex cursor-pointer" data-v-a8031b1b><div i-ri-folder-reduce-line data-v-a8031b1b></div></button></div><div class="items" data-v-a8031b1b><!--[--><div class="VPSidebarItem level-1 is-link" data-v-a8031b1b data-v-a8031b1b><div class="press-sidebar-item item" data-v-a8031b1b><div class="indicator" data-v-a8031b1b></div><a href="/1_yueli/0_staff/" class="va-link link" tag="a" data-v-a8031b1b><!--[--><!-- eslint-disable-next-line vue/no-v-text-v-html-on-component --><p class="text ml-1" data-v-a8031b1b>五线谱</p><!--]--></a><!--v-if--></div><!--v-if--></div><div class="VPSidebarItem level-1 is-link" data-v-a8031b1b data-v-a8031b1b><div class="press-sidebar-item item" data-v-a8031b1b><div class="indicator" data-v-a8031b1b></div><a href="/1_yueli/1_pu/" class="va-link link" tag="a" data-v-a8031b1b><!--[--><!-- eslint-disable-next-line vue/no-v-text-v-html-on-component --><p class="text ml-1" data-v-a8031b1b>五种记谱法略解</p><!--]--></a><!--v-if--></div><!--v-if--></div><div class="VPSidebarItem level-1 is-link" data-v-a8031b1b data-v-a8031b1b><div class="press-sidebar-item item" data-v-a8031b1b><div class="indicator" data-v-a8031b1b></div><a href="/1_yueli/999_playground/" class="va-link link" tag="a" data-v-a8031b1b><!--[--><!-- eslint-disable-next-line vue/no-v-text-v-html-on-component --><p class="text ml-1" data-v-a8031b1b>乐理游乐场</p><!--]--></a><!--v-if--></div><!--v-if--></div><!--]--></div></section></ul><!--]--></div></aside><!--]--><!----><!--[--><main class="press-main flex has-sidebar" data-v-5431fe00><div w="full" flex="~" class="px-6 md:pl-12 has-aside relative" p="t-4" data-v-5431fe00><div class="container" flex="~ grow" justify="between" data-v-5431fe00><!--[--><div w="full" class="vp-doc content" flex="~ col grow" p="lt-md:0" data-v-5431fe00><!--[--><!--]--><!--[--><!--]--><!--[--><!--[--><!--]--><article class="markdown-body mx-auto w-full max-w-4xl" data-v-5431fe00><!--[--><div flex items-center justify-between gap-2 data-v-5431fe00><h1 id="开始" tabindex="-1" class="!mt-0" data-v-5431fe00>开始 <a class="header-anchor" href="#开始" aria-hidden="true" data-v-5431fe00></a></h1><!----></div><!--[--><p>The world is not beautiful. Therefore, it is. -《奇诺之旅》</p><!--]--><!--[--><!--]--><!--]--><!----><!----></article><!--[--><!--]--><div class="press-doc-footer pb-8 max-w-4xl" w="full" m="auto" data-v-5431fe00 data-v-5a764274><div flex justify="between" items="center" text="sm" data-v-5a764274><a flex items="center" class="decoration-none!" href="https://github.com/sutiao-liulang-fashi/sutiao-liulang-fashi.github.io/edit/main/pages/0_start/index.md" target="_blank" rel="noopener noreferrer" data-v-5a764274><div i-ri-external-link-line data-v-5a764274></div><span ml-1 data-v-5a764274>编辑本页</span></a><p class="press-lastUpdated text-right" data-v-5a764274 data-v-c6ad85b2>最后更新于: <time datetime="2026-04-15T02:11:48.000Z" data-v-c6ad85b2></time></p></div><nav class="prev-next" aria-label="Pager" data-v-5a764274><div class="pager" data-v-5a764274><!----></div><div class="pager" data-v-5a764274><a href="/1_yueli/" class="pager-link next" data-v-5a764274><span class="desc" data-v-5a764274>下一页</span><span class="title" data-v-5a764274>乐理</span></a></div></nav></div><!--]--></div><!--[--><!--]--><!--[--><!--]--><!--[--><!--]--><!----><!--[--><!--]--><!--]--><!--[--><!--[--><button class="toc-btn shadow-lg fixed press-icon-btn z-99 lt-md:hidden! xl:hidden!" right="5" bottom="24"><div i-ri-file-list-line></div></button><!----><aside flex="~ col grow" p="l-0 xl:l-8" text="center" z="$" class="press-aside lt-xl:fixed shadow xl:shadow-none xl:hover:shadow-none hover:shadow-lg"><div class="aside-curtain"></div><div class="aside-container lt-xl:fixed" flex="~ col"><div class="aside-content overflow-auto" flex="~ col"><div style="display:none;" data-v-58990ef7><div class="content" data-v-58990ef7><div class="outline-title" data-v-58990ef7>本页</div><div class="outline-marker" data-v-58990ef7></div><nav aria-labelledby="doc-outline-aria-label" data-v-58990ef7><span id="doc-outline-aria-label" class="visually-hidden" data-v-58990ef7> Table of Contents for current page </span><ul class="root va-toc css-i18n-toc va-toc relative z-1 css-i18n-toc" data-v-58990ef7 data-v-ebf72b81><!--[--><!--]--></ul></nav></div></div><div class="flex-grow"></div><!----></div></div></aside><!--]--><!--]--></div></div></main><!--]--><footer class="press-footer has-sidebar" data-v-8934a884><div flex="~ col" class="container" data-v-8934a884><p class="message" data-v-8934a884>Powered by <a href="https://valaxy.site">Valaxy</a></p><!----></div></footer></div><!--]--></div><script>window.__INITIAL_STATE__='{"pinia":{"app":{"showLoading":true},"routerStore":{},"press-app":{}}}'</script><script type="application/ld+json" data-hid="schema-org-graph">{"@context":"https://schema.org","@graph":[{"@id":"https://sutiao-liulang-fashi.github.io/#identity","@type":"Person","name":"VALAXY Developer","url":"https://sutiao-liulang-fashi.github.io/","image":{"@id":"https://sutiao-liulang-fashi.github.io/#/schema/image/1"},"sameAs":[]},{"@id":"https://sutiao-liulang-fashi.github.io/#website","@type":"WebSite","dateModified":"2026-04-15T02:12:23.499Z","datePublished":"2026-04-15T02:12:23.499Z","inLanguage":"zh-CN","name":"开始","url":"https://sutiao-liulang-fashi.github.io/","publisher":{"@id":"https://sutiao-liulang-fashi.github.io/#identity"}},{"@id":"https://sutiao-liulang-fashi.github.io/#webpage","@type":"WebPage","description":"薯条流浪法师的个人小屋","name":"开始","url":"https://sutiao-liulang-fashi.github.io/","about":{"@id":"https://sutiao-liulang-fashi.github.io/#identity"},"isPartOf":{"@id":"https://sutiao-liulang-fashi.github.io/#website"},"potentialAction":[{"@type":"ReadAction","target":["https://sutiao-liulang-fashi.github.io/"]}]},{"@id":"https://sutiao-liulang-fashi.github.io/#/schema/image/1","@type":"ImageObject","contentUrl":"https://valaxy.site/valaxy-logo.png","inLanguage":"zh-CN","url":"https://valaxy.site/valaxy-logo.png"}]}</script>
+  
+</body>
+</html>

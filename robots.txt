@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sutiao-liulang-fashi.github.io/sitemap.xml

@@ -1,0 +1,13 @@
+{
+    "version": "https://jsonfeed.org/version/1",
+    "title": "薯条流浪法师",
+    "home_page_url": "https://sutiao-liulang-fashi.github.io/",
+    "feed_url": "https://sutiao-liulang-fashi.github.io/feed.json",
+    "description": "薯条流浪法师的个人小屋",
+    "icon": "https://valaxy.site/valaxy-logo.png",
+    "author": {
+        "name": "VALAXY Developer",
+        "url": "https://valaxy.site"
+    },
+    "items": []
+}
